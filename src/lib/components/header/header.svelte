@@ -2,8 +2,7 @@
 	import { page } from '$app/stores';
 	import Button from '@/components/ui/button/button.svelte';
 	import { loginState } from '@/states/loginState.svelte';
-	import { cn } from '@/utils';
-	import { LogOut } from 'lucide-svelte';
+	import { Loader, LogOut } from 'lucide-svelte';
 	console.log($page.url.pathname);
 	const mainNavItems = [
 		{ title: 'Start Learning!', href: '/start-learning' },
@@ -43,10 +42,10 @@
 				{#each mainNavItems as nav}
 					<a
 						href={nav.href}
-						class={cn(
+						class={[
 							'hover:text-primary  text-sm font-medium transition-colors',
 							$page.url.pathname.includes(nav.href) ? 'text-primary' : 'text-muted-foreground'
-						)}
+						]}
 					>
 						{nav.title}
 					</a>
@@ -59,8 +58,12 @@
 					loginState.handleSignout();
 				}}
 			>
-				<LogOut className="mr-2 h-4 w-4" />
-				Sign Out
+				{#if loginState.isLoading}
+					<Loader class="animate-spin" />
+				{:else}
+					<LogOut className="mr-2 h-4 w-4" />
+					Sign Out
+				{/if}
 			</Button>
 		</nav>
 	</div>

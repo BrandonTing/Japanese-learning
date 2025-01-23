@@ -4,6 +4,7 @@
 	import Checkbox from '@/components/ui/checkbox/checkbox.svelte';
 	import Input from '@/components/ui/input/input.svelte';
 	import { loginState } from '@/states/loginState.svelte';
+	import { Loader } from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
 </script>
 
@@ -42,7 +43,12 @@
 					{loginState.error}
 				</p>{/if}
 			<Button type="submit" class="w-full">
-				{loginState.isSignUp ? 'Sign Up' : 'Log in'}
+				{#if loginState.isLoading}
+					<Loader class="animate-spin" />
+				{:else if loginState.isSignUp}
+					Sign Up
+				{/if}
+				Log in
 			</Button>
 		</form>
 		<div class="mt-4 text-center">

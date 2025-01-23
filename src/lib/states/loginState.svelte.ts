@@ -11,10 +11,12 @@ export class LoginState {
 		rememberMe: false
 	});
   error = $state('');
+  isLoading = $state(false)
   constructor() {}
   async handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
     const {isSignUp, user} = this
+    this.isLoading = true
 		await Effect.gen(function* () {
 			const { data, error } = yield* Effect.tryPromise({
 				try: () => {
@@ -54,15 +56,30 @@ export class LoginState {
 			}),
 			Effect.runPromise
 		);
+    this.isLoading = false
 	};
   async handleSignout() {
-    await authClient.signOut({
-			fetchOptions: {
-				onSuccess: () => {
-					goto('/');
-				}
-			}
-		});
+    this.isLoading = true
+    await Effect.gen(function*() {
+      yield* Effect.tryPromise({
+        try: () => authClient.signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              goto('/');
+            }
+          }
+        }),
+        catch: () => new AuthError({ failedReason: "failed to handle signout" })
+      })
+    }).pipe(
+      Effect.catchTag('AuthError', (e) => {
+        this.error = e.failedReason;
+        return Effect.succeed(null);
+      }),
+      Effect.runPromise
+    );
+    
+    this.isLoading = false
   }
 }
 
