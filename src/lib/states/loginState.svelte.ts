@@ -3,7 +3,7 @@ import { AuthError } from '@/auth';
 import { authClient } from '@/auth-client';
 import { Effect, Match } from 'effect';
 
-export class FormState {
+export class LoginState {
 	isSignUp = $state(false);
 	user = $state({
 		email: '',
@@ -54,5 +54,16 @@ export class FormState {
 			}),
 			Effect.runPromise
 		);
-	}
+	};
+  async handleSignout() {
+    await authClient.signOut({
+			fetchOptions: {
+				onSuccess: () => {
+					goto('/');
+				}
+			}
+		});
+  }
 }
+
+export const loginState = new LoginState()
