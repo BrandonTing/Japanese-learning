@@ -82,5 +82,4 @@ export class LoginState {
     this.isLoading = false
   }
 }
-
 export const loginState = new LoginState()
