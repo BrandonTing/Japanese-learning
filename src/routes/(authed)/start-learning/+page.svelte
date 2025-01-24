@@ -1,10 +1,30 @@
 <script lang="ts">
-	import Feature from '@/components/start-learning/feature.svelte';
+	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-	const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
-	let level = $state({ value: levels[0], label: levels[0] });
-	const learningCategories = ['単語', '文型'];
-	let learningCategory = $state({ value: learningCategories[0], label: learningCategories[0] });
+	import {
+		Select,
+		SelectContent,
+		SelectItem,
+		SelectTrigger,
+		SelectValue
+	} from '@/components/ui/select';
+	const levels = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
+	type Level = (typeof levels)[number];
+	let examLevel = $state<{
+		value: Level;
+		label: Level;
+	}>({ value: 'N5', label: 'N5' });
+
+	let learningLevel = $state<{
+		value: Level;
+		label: Level;
+	}>({ value: 'N5', label: 'N5' });
+	const learningCategories = ['単語', '文型'] as const;
+	type Category = (typeof learningCategories)[number];
+	let learningCategory = $state<{
+		value: Category;
+		label: Category;
+	}>({ value: '単語', label: '単語' });
 </script>
 
 <div class="flex flex-col gap-4">
@@ -16,13 +36,21 @@
 			</p>
 		</CardHeader>
 		<CardContent class="flex items-center gap-4">
-			<Feature
-				bind:selected={level}
-				options={levels}
-				onGenerate={() => {
+			<Select bind:selected={examLevel}>
+				<SelectTrigger class="w-32">
+					<SelectValue placeholder="Select Level" />
+				</SelectTrigger>
+				<SelectContent>
+					{#each levels as level}
+						<SelectItem value={level}>{level}</SelectItem>
+					{/each}
+				</SelectContent>
+			</Select>
+			<Button
+				onclick={() => {
 					console.log('generate exam');
-				}}
-			/>
+				}}>Generate Exam</Button
+			>
 		</CardContent>
 	</Card>
 
@@ -34,13 +62,32 @@
 			</p>
 		</CardHeader>
 		<CardContent class="flex items-center gap-4">
-			<Feature
-				bind:selected={learningCategory}
-				options={learningCategories}
-				onGenerate={() => {
+			<Select bind:selected={learningLevel}>
+				<SelectTrigger class="w-32">
+					<SelectValue placeholder="Select Level" />
+				</SelectTrigger>
+				<SelectContent>
+					{#each levels as level}
+						<SelectItem value={level}>{level}</SelectItem>
+					{/each}
+				</SelectContent>
+			</Select>
+			<Select bind:selected={learningCategory}>
+				<SelectTrigger class="w-32">
+					<SelectValue placeholder="Select Topic" />
+				</SelectTrigger>
+				<SelectContent>
+					{#each learningCategories as category}
+						<SelectItem value={category}>{category}</SelectItem>
+					{/each}
+				</SelectContent>
+			</Select>
+
+			<Button
+				onclick={() => {
 					console.log('Generate');
-				}}
-			/>
+				}}>Generate</Button
+			>
 		</CardContent>
 	</Card>
 </div>
