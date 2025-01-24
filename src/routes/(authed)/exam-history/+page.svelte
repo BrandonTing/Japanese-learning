@@ -1,4 +1,4 @@
 <script lang="ts">
 </script>
 
-<div>Start learning</div>
+<div>history</div>
