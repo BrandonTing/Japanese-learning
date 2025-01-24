@@ -1,4 +1,5 @@
 <script lang="ts">
+	import GenerateButton from '@/components/ai/generateButton.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import {
@@ -8,6 +9,7 @@
 		SelectTrigger,
 		SelectValue
 	} from '@/components/ui/select';
+
 	const levels = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
 	type Level = (typeof levels)[number];
 	let examLevel = $state<{
@@ -83,11 +85,7 @@
 				</SelectContent>
 			</Select>
 
-			<Button
-				onclick={() => {
-					console.log('Generate');
-				}}>Generate</Button
-			>
+			<GenerateButton />
 		</CardContent>
 	</Card>
 </div>

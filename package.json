@@ -44,9 +44,13 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.1.2",
+    "@ai-sdk/svelte": "^1.1.2",
     "@libsql/kysely-libsql": "^0.4.1",
     "@tailwindcss/vite": "^4.0.0",
+    "ai": "^4.1.2",
     "better-auth": "^1.1.14",
-    "effect": "^3.12.7"
+    "effect": "^3.12.7",
+    "zod": "^3.24.1"
   }
 }
