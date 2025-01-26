@@ -84,8 +84,7 @@
 					{/each}
 				</SelectContent>
 			</Select>
-
-			<GenerateButton />
+			<GenerateButton prompt={`請教我一個${learningLevel.value}等級的${learningCategory.value}`} />
 		</CardContent>
 	</Card>
 </div>
