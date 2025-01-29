@@ -84,6 +84,7 @@
 					{/each}
 				</SelectContent>
 			</Select>
+      <!-- TODO split 2 buttons? -->
 			<GenerateButton level={learningLevel.value} category={learningCategory.value} />
 		</CardContent>
 	</Card>
