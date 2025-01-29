@@ -1,5 +1,6 @@
 <script lang="ts">
-	import GenerateButton from '@/components/ai/generateButton.svelte';
+	import GenerateGrammerButton from '@/components/ai/generateGrammerButton.svelte';
+	import GenerateVocabularyButton from '@/components/ai/generateVocabularyButton.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import {
@@ -84,8 +85,12 @@
 					{/each}
 				</SelectContent>
 			</Select>
-      <!-- TODO split 2 buttons? -->
-			<GenerateButton level={learningLevel.value} category={learningCategory.value} />
+			{#if learningCategory.value === '単語'}
+				<GenerateVocabularyButton level={learningLevel.value} />
+			{:else}
+				<!-- TODO grame -->
+				<GenerateGrammerButton level={learningLevel.value} category={learningCategory.value} />
+			{/if}
 		</CardContent>
 	</Card>
 </div>
