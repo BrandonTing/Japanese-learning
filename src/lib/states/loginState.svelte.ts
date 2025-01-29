@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
-import { AuthError } from '@/auth';
 import { authClient } from '@/auth-client';
+import { AuthError } from '@/error';
 import { Effect, Match } from 'effect';
 
 export class LoginState {

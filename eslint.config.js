@@ -33,12 +33,7 @@ export default ts.config(
   },
   {
     rules: {
-      "@typescript-eslint/ban-types": ["error", {
-        types: {
-          // un-ban a type that's banned by default
-          "{}": false,
-        },
-      }],
+      "@typescript-eslint/no-empty-object-type": "off",
     }
   }
 );
