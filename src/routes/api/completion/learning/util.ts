@@ -7,11 +7,12 @@ export const vocabularySchema = z.object({
   variants: z.array(z.object({
     type: z.string().describe("變化方式的名稱"),
     form: z.string().describe("不同變化方式")
-  })).describe("若為動詞，提供ます型、辭書型、て型、意向型、命令型、可能型、否定型等變化，若為形容詞或名詞，提供丁寧體、現在普通體與過去普通體三種變化"),
+  })).describe("若為動詞，提供ます型、辭書型、て型、意向型、命令型、可能型、否定型等變化，若為形容詞或名詞，提供丁寧體、現在普通體與過去普通體三種變化").min(1),
   explanations: z.array(z.object({
     meaning: z.string().describe("単語的含義"),
+    usage: z.string().describe("単語為此含義時，若有經常搭配的文法或語氣上有特殊的強調之處在此補充").optional(),
     example: z.string().describe("単語為此含義時的例句"),
-  })).describe("提供単語的含義與對應的例句，若単語有多個含義則提供多組，以三組為限。")
+  })).describe("提供単語的含義、使用方式與對應的例句，若単語有多個含義則提供多組，以三組為限。").min(1).max(3)
 })
 export type VocabularySchema = z.infer<typeof vocabularySchema>
 

@@ -21,7 +21,7 @@
 
 	let error = '';
 	export let level: string;
-	$: prompt = `請隨機教我一個${level}等級的単語`;
+	$: prompt = `請用繁體中文，提供我適合JLPT ${level}程度的単語，並提供介紹`;
 	let vocabulary: VocabularySchema | null = null;
 	const { complete, isLoading } = useCompletion({
 		api: '/api/completion/learning/vocabulary',
@@ -101,6 +101,9 @@
 									<h4 class="font-medium">
 										{index + 1}. {explanation.meaning}
 									</h4>
+									{#if explanation.usage}
+										<p>{explanation.usage}</p>
+									{/if}
 									<p class="text-sm text-muted-foreground">
 										{explanation.example}
 									</p>

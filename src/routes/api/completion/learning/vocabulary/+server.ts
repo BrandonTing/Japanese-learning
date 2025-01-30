@@ -22,7 +22,7 @@ export const POST = (async ({ request }) => {
     })
     const result = yield* Effect.tryPromise({
       try: () => generateObject({
-        temperature: 0.5,
+        temperature: 1,
         // use structured
         model: openai('gpt-4o-mini'),
         prompt,
