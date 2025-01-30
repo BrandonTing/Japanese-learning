@@ -3,11 +3,9 @@
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import { Input } from '@/components/ui/input';
 	import { ScrollArea } from '@/components/ui/scroll-area';
-	import type { Message } from 'ai';
+	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare, PlusCircle } from 'lucide-svelte';
-	import { slide } from 'svelte/transition';
-	let messages: Array<Message> = [];
-	let message: string = '';
+	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
 </script>
 
 <Drawer.Root>
@@ -20,7 +18,7 @@
 		<MessageSquare class="w-6 h-6" />
 		<span class="sr-only">Ask AI</span>
 	</Drawer.Trigger>
-	<Drawer.Content >
+	<Drawer.Content>
 		<Drawer.Header>
 			<Drawer.Title>Ask AI</Drawer.Title>
 			<Drawer.Description>
@@ -29,7 +27,7 @@
 		</Drawer.Header>
 		<div class="p-4 flex flex-col h-[80vh]">
 			<ScrollArea class="flex-grow mb-4">
-				{#each messages as message}
+				{#each $messages as message}
 					<div class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
 						<span
 							class={`inline-block p-2 rounded-lg ${
@@ -40,28 +38,44 @@
 						</span>
 					</div>
 				{/each}
+				{#if $isLoading}
+					<div class="mb-4 text-left">
+						<span class="inline-block p-2 text-black"> loading... </span>
+					</div>
+				{/if}
 			</ScrollArea>
 			<div class="flex flex-col space-y-2">
 				<p class="text-sm text-muted-foreground">
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
-				<div class="flex items-center space-x-2">
-					<Input bind:value={message} placeholder="Type your message..." />
-					<Button
-						onclick={() => {
-							console.log(message);
-						}}>Send</Button
-					>
-					<Button
-						variant="outline"
-						onclick={() => {
-							messages = [];
-						}}
-					>
-						<PlusCircle class="w-4 h-4" />
-						<span class="sr-only">Create New Chat</span>
-					</Button>
-				</div>
+				<form on:submit={handleSubmit}>
+					<div class="flex items-center space-x-2">
+						{#if $isLoading}
+							<Button
+								class="flex-1"
+								variant="outline"
+								on:click={() => {
+									stop();
+								}}
+							>
+								<span>Cancel Generation</span>
+							</Button>
+						{:else}
+							<Input bind:value={$input} placeholder="Type your message..." />
+							<Button type="submit">Send</Button>
+						{/if}
+						<Button
+							variant="outline"
+							onclick={() => {
+								stop();
+								setMessages([]);
+							}}
+						>
+							<PlusCircle class="w-4 h-4" />
+							<span class="sr-only">Create New Chat</span>
+						</Button>
+					</div>
+				</form>
 			</div>
 		</div>
 	</Drawer.Content>
