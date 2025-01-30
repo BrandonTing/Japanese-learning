@@ -22,7 +22,7 @@
 		value: Level;
 		label: Level;
 	}>({ value: 'N5', label: 'N5' });
-	const learningCategories = ['単語', '文型'] as const;
+	const learningCategories = ['単語', '文法'] as const;
 	type Category = (typeof learningCategories)[number];
 	let learningCategory = $state<{
 		value: Category;
