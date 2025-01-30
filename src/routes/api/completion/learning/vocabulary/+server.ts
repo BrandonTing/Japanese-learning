@@ -1,10 +1,10 @@
 import { env } from '$env/dynamic/private';
 import { AIGenerateError, PromptError, type ErrorResposne } from '@/error';
 import { createOpenAI } from '@ai-sdk/openai';
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { generateObject } from 'ai';
 import { Effect } from 'effect';
-import { vocabularySchema, type VocabularySchema } from '../util';
+import { vocabularySchema } from '../util';
 import type { RequestHandler } from './$types';
 
 const openai = createOpenAI({
@@ -34,10 +34,10 @@ export const POST = (async ({ request }) => {
     })
     return {
       success: true,
-      object: result.object
+      response: result.toJsonResponse()
     } as {
       success: true,
-      object: VocabularySchema
+      response: Response
     }
   }).pipe(
     Effect.catchTags({
@@ -59,5 +59,5 @@ export const POST = (async ({ request }) => {
   if (!result.success) {
     error(500, result.message)
   }
-  return json(result.object)
+  return result.response
 }) satisfies RequestHandler;

@@ -9,7 +9,6 @@
 
 	let error = '';
 	export let level: string;
-	export let category: string;
 	$: prompt = `請隨機教我一個${level}等級的文型`;
 	let grammer: GrammerSchema | null = null;
 	const { complete, isLoading } = useCompletion({
@@ -40,7 +39,7 @@
 	</Dialog.Trigger>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>{category}</Dialog.Title>
+			<Dialog.Title>文型</Dialog.Title>
 			<Dialog.Description>
 				{#if $isLoading}
 					Loading...

@@ -88,8 +88,7 @@
 			{#if learningCategory.value === '単語'}
 				<GenerateVocabularyButton level={learningLevel.value} />
 			{:else}
-				<!-- TODO grame -->
-				<GenerateGrammerButton level={learningLevel.value} category={learningCategory.value} />
+				<GenerateGrammerButton level={learningLevel.value} />
 			{/if}
 		</CardContent>
 	</Card>
