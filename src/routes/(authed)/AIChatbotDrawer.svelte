@@ -67,7 +67,6 @@
 						<Button
 							variant="outline"
 							onclick={() => {
-								console.log($messages);
 								stop();
 								setMessages([]);
 							}}
