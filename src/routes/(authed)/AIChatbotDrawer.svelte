@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button, buttonVariants } from '@/components/ui/button';
-	import { Input } from '@/components/ui/input';
 	import { ScrollArea } from '@/components/ui/scroll-area';
+	import Textarea from '@/components/ui/textarea/textarea.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare, PlusCircle } from 'lucide-svelte';
 	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
@@ -30,7 +30,7 @@
 				{#each $messages as message}
 					<div class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
 						<span
-							class={`inline-block p-2 rounded-lg ${
+							class={`inline-block p-2 rounded-lg whitespace-pre-line ${
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
 							}`}
 						>
@@ -61,12 +61,13 @@
 								<span>Cancel Generation</span>
 							</Button>
 						{:else}
-							<Input bind:value={$input} placeholder="Type your message..." />
+							<Textarea bind:value={$input} placeholder="Type your message..." />
 							<Button type="submit">Send</Button>
 						{/if}
 						<Button
 							variant="outline"
 							onclick={() => {
+								console.log($messages);
 								stop();
 								setMessages([]);
 							}}

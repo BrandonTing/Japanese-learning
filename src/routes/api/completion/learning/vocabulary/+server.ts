@@ -24,7 +24,7 @@ export const POST = (async ({ request }) => {
       try: () => generateObject({
         temperature: 1,
         // use structured
-        model: openai('gpt-4o-mini'),
+        model: openai('gpt-4o'),
         prompt,
         schema: vocabularySchema
       }),
