@@ -6,9 +6,31 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare, PlusCircle } from 'lucide-svelte';
 	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
+	let abortController = new AbortController();
 </script>
 
-<Drawer.Root>
+<Drawer.Root
+	onOpenChange={(open) => {
+		if (open) {
+			if (abortController.signal.aborted) {
+				abortController = new AbortController();
+			}
+			window.addEventListener(
+				'keydown',
+				(e) => {
+					if (e.code === 'Space' && isLoading) {
+						stop();
+					}
+				},
+				{
+					signal: abortController.signal
+				}
+			);
+		} else {
+			abortController.abort();
+		}
+	}}
+>
 	<Drawer.Trigger
 		class={buttonVariants({
 			variant: 'default',
