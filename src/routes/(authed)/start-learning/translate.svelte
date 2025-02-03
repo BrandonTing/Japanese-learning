@@ -80,11 +80,11 @@
 			</Alert.Root>
 		{/if}
 		<Accordion.Root bind:value={accordionValue}>
-			<Accordion.Item value={accordionTypes.CORRECTNESS} class="border-0  text-base">
-				<Accordion.Content>{@html marked($completion)}</Accordion.Content>
+			<Accordion.Item value={accordionTypes.CORRECTNESS} class="border-0">
+				<Accordion.Content class="text-base">{@html marked($completion)}</Accordion.Content>
 			</Accordion.Item>
-			<Accordion.Item value={accordionTypes.EXPLAIN} class="border-0 text-base">
-				<Accordion.Content>{@html marked($completion)}</Accordion.Content>
+			<Accordion.Item value={accordionTypes.EXPLAIN} class="border-0">
+				<Accordion.Content class="text-base">{@html marked($completion)}</Accordion.Content>
 			</Accordion.Item>
 		</Accordion.Root>
 	</CardContent>
