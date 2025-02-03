@@ -5,6 +5,7 @@
 	import Textarea from '@/components/ui/textarea/textarea.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare, PlusCircle } from 'lucide-svelte';
+	import { marked } from 'marked';
 	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
 	let abortController = new AbortController();
 </script>
@@ -52,11 +53,11 @@
 				{#each $messages as message}
 					<div class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
 						<span
-							class={`inline-block p-2 rounded-lg whitespace-pre-line ${
+							class={`inline-block p-2 rounded-lg ${
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
 							}`}
 						>
-							{message.content}
+							{@html marked(message.content)}
 						</span>
 					</div>
 				{/each}

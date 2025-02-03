@@ -76,3 +76,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+table {
+  width: 100%;
+}
+thead {
+  text-align: left;
+}
+table,
+th,
+td {
+  border: 1px solid;
+}
