@@ -7,7 +7,7 @@ export default defineConfig({
 		sentrySvelteKit({
 			sourceMapsUploadOptions: {
 				org: 'brandon-ting',
-				project: 'javascript-sveltekit'
+				project: 'javascript-sveltekit',
 			}
 		}),
 		sveltekit()
