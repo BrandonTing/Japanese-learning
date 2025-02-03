@@ -1,10 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { AIGenerateError, PromptError, type ErrorResposne } from '@/error';
 import { createOpenAI } from '@ai-sdk/openai';
-import { error } from '@sveltejs/kit';
-import { generateObject } from 'ai';
+import { error, text } from '@sveltejs/kit';
+import { generateText } from 'ai';
 import { Effect } from 'effect';
-import { vocabularySchema } from '../util';
 import type { RequestHandler } from './$types';
 
 const openai = createOpenAI({
@@ -21,16 +20,16 @@ export const POST = (async ({ request }) => {
       catch: () => new PromptError()
     })
     const result = yield* Effect.tryPromise({
-      try: () => generateObject({
-        temperature: 1,
+      try: () => generateText({
+        temperature: 0.1,
         system: `
           你是一個日文教師，用戶是正在準備JLPT考試的學生，
-          你會根據用戶提供的JLPT考試等級，提供用戶一個提供程度相當的單字，並提供介紹
+          用戶會提供一個日文文章以及需求，你會根據需求作出回覆
+          需求包含檢查文章文法是否正確或請解釋文章中使用到哪些文法等。
         `,
-        // use structured
-        model: openai('gpt-4o'),
+        model: openai('gpt-4o-mini'),
         prompt,
-        schema: vocabularySchema
+        maxTokens: 1024
       }),
       catch: (e) => new AIGenerateError({
         failedReason: e instanceof Error ? e.message : "Failed to generate."
@@ -38,7 +37,7 @@ export const POST = (async ({ request }) => {
     })
     return {
       success: true,
-      response: result.toJsonResponse()
+      response: text(result.text)
     } as {
       success: true,
       response: Response
