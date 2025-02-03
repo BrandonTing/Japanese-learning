@@ -11,7 +11,6 @@
 
 	let error = '';
 	export let level: string;
-	$: prompt = `請用繁體中文，提供我程度相當於JLPT ${level}程度的日文文法，並提供介紹`;
 	let grammer: GrammerSchema | null = null;
 	const { complete, isLoading } = useCompletion({
 		api: '/api/completion/learning/grammer',
@@ -42,7 +41,7 @@
 		on:click={async () => {
 			error = '';
 			grammer = null;
-			await complete(prompt);
+			await complete(level);
 		}}
 		disabled={$isLoading}
 	>

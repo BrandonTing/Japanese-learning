@@ -24,6 +24,10 @@ export const POST = (async ({ request }) => {
     const result = yield* Effect.tryPromise({
       try: () => generateObject({
         temperature: 1,
+        system: `
+          你是一個日文教師，用戶是正在準備JLPT考試的學生，
+          你會根據用戶提供的JLPT考試等級，提供用戶一個提供我程度相當的文法，並提供介紹
+        `,
         model: openai('gpt-4o'),
         prompt,
         schema: grammerSchema

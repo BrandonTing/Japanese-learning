@@ -21,7 +21,6 @@
 
 	let error = '';
 	export let level: string;
-	$: prompt = `請用繁體中文，提供我程度相當於JLPT ${level}程度的日文單字，並提供介紹`;
 	let vocabulary: VocabularySchema | null = null;
 	const { complete, isLoading } = useCompletion({
 		api: '/api/completion/learning/vocabulary',
@@ -52,7 +51,7 @@
 		on:click={async () => {
 			error = '';
 			vocabulary = null;
-			await complete(prompt);
+			await complete(level);
 		}}
 		disabled={$isLoading}
 	>
