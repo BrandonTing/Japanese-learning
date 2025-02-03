@@ -5,6 +5,7 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import { Textarea } from '@/components/ui/textarea';
 	import { useCompletion } from '@ai-sdk/svelte';
+	import * as Sentry from '@sentry/sveltekit';
 	import { CircleAlert } from 'lucide-svelte';
 	import { marked } from 'marked';
 	import { handleGenerateError } from './util';
@@ -48,12 +49,20 @@
 			{/if}
 
 			<Button
-				onclick={async () => {
+				onclick={() => {
 					accordionValue = accordionTypes.CORRECTNESS;
-					await complete(`
-            請協助我翻譯以下句子，並判斷其中文法是否正確：
-            ${text}
-          `);
+					Sentry.startSpan(
+						{
+							name: 'Translate and Check Grammer',
+							op: 'Translate'
+						},
+						async () => {
+							await complete(`
+                請協助我翻譯以下句子，並判斷其中文法是否正確：
+                ${text}
+              `);
+						}
+					);
 				}}
 				disabled={!text.trim() || accordionValue === accordionTypes.CORRECTNESS}
 				>Translate and Check Grammer</Button
@@ -61,10 +70,18 @@
 			<Button
 				onclick={() => {
 					accordionValue = accordionTypes.EXPLAIN;
-					complete(`
-            請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
-            ${text}
-          `);
+					Sentry.startSpan(
+						{
+							name: 'Translate and Explain Grammer',
+							op: 'Translate'
+						},
+						async () => {
+							await complete(`
+                請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
+                ${text}
+              `);
+						}
+					);
 				}}
 				disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}
 				>Translate and Explain Grammer</Button

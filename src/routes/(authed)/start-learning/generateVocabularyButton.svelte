@@ -14,6 +14,7 @@
 	} from '@/components/ui/table';
 	import { JSONParseError } from '@/error';
 	import { useCompletion } from '@ai-sdk/svelte';
+	import * as Sentry from '@sentry/sveltekit';
 	import { Effect } from 'effect';
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import type { VocabularySchema } from '../../../routes/api/completion/learning/util';
@@ -48,10 +49,18 @@
 <Dialog.Root>
 	<Dialog.Trigger
 		class={buttonVariants({ variant: 'default' })}
-		on:click={async () => {
+		on:click={() => {
 			error = '';
 			vocabulary = null;
-			await complete(level);
+			Sentry.startSpan(
+				{
+					name: 'Generate Vocabulary',
+					op: 'Generate'
+				},
+				async () => {
+					await complete(level);
+				}
+			);
 		}}
 		disabled={$isLoading}
 	>
