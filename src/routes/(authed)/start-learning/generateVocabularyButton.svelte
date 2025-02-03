@@ -2,7 +2,6 @@
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import { handleGenerateError } from '@/components/ai/util';
 	import { buttonVariants } from '@/components/ui/button';
 	import {
 		Cell,
@@ -18,6 +17,7 @@
 	import { Effect } from 'effect';
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import type { VocabularySchema } from '../../../routes/api/completion/learning/util';
+	import { handleGenerateError } from './util';
 
 	let error = '';
 	export let level: string;
@@ -60,7 +60,7 @@
 	</Dialog.Trigger>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>単語</Dialog.Title>
+			<Dialog.Title>單字</Dialog.Title>
 			<Dialog.Description>
 				{#if $isLoading}
 					Loading...

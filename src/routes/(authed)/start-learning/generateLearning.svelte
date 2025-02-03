@@ -1,6 +1,4 @@
 <script lang="ts">
-	import GenerateGrammerButton from '@/components/ai/generateGrammerButton.svelte';
-	import GenerateVocabularyButton from '@/components/ai/generateVocabularyButton.svelte';
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import {
 		Select,
@@ -9,18 +7,20 @@
 		SelectTrigger,
 		SelectValue
 	} from '@/components/ui/select';
+	import GenerateGrammerButton from './generateGrammerButton.svelte';
+	import GenerateVocabularyButton from './generateVocabularyButton.svelte';
 	import { levels, type Level } from './util';
 
 	let learningLevel = $state<{
 		value: Level;
 		label: Level;
 	}>({ value: 'N5', label: 'N5' });
-	const learningCategories = ['単語', '文法'] as const;
+	const learningCategories = ['單字', '文法'] as const;
 	type Category = (typeof learningCategories)[number];
 	let learningCategory = $state<{
 		value: Category;
 		label: Category;
-	}>({ value: '単語', label: '単語' });
+	}>({ value: '單字', label: '單字' });
 </script>
 
 <Card class="w-full">
@@ -51,7 +51,7 @@
 				{/each}
 			</SelectContent>
 		</Select>
-		{#if learningCategory.value === '単語'}
+		{#if learningCategory.value === '單字'}
 			<GenerateVocabularyButton level={learningLevel.value} />
 		{:else}
 			<GenerateGrammerButton level={learningLevel.value} />

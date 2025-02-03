@@ -7,9 +7,10 @@
 	import { ChevronDown, Loader, LogOut } from 'lucide-svelte';
 
 	const mainNavItems = [
-		{ title: 'Start Learning!', href: '/start-learning' },
-		{ title: 'Exam History', href: '/exam-history' },
-		{ title: 'Saved AI Conversations', href: '/saved-conversations' }
+		{ title: 'Start Learning!', href: '/start-learning' }
+		// TODO not implemented yet
+		// { title: 'Exam History', href: '/exam-history' },
+		// { title: 'Saved AI Conversations', href: '/saved-conversations' }
 	] as const;
 
 	const externalResources = [

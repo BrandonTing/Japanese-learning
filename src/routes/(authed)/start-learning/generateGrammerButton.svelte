@@ -1,13 +1,13 @@
 <script lang="ts">
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { handleGenerateError } from '@/components/ai/util';
 	import { buttonVariants } from '@/components/ui/button';
 	import { JSONParseError } from '@/error';
 	import { useCompletion } from '@ai-sdk/svelte';
 	import { Effect } from 'effect';
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
-	import type { GrammerSchema } from '../../../routes/api/completion/learning/util';
+	import type { GrammerSchema } from '../../api/completion/learning/util';
+	import { handleGenerateError } from './util';
 
 	let error = '';
 	export let level: string;
