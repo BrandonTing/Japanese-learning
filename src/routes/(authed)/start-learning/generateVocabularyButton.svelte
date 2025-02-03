@@ -1,48 +1,17 @@
 <script lang="ts">
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { buttonVariants } from '@/components/ui/button';
-	import {
-		Cell,
-		Row,
-		Table,
-		TableBody,
-		TableHead,
-		TableHeader,
-		TableRow
-	} from '@/components/ui/table';
-	import { JSONParseError } from '@/error';
-	import { useCompletion } from '@ai-sdk/svelte';
+	import { ScrollArea } from '@/components/ui/scroll-area';
+	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
-	import { Effect } from 'effect';
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
-	import type { VocabularySchema } from '../../../routes/api/completion/learning/util';
-	import { handleGenerateError } from './util';
+	import { marked } from 'marked';
 
 	let error = '';
 	export let level: string;
-	let vocabulary: VocabularySchema | null = null;
-	const { complete, isLoading } = useCompletion({
-		api: '/api/completion/learning/vocabulary',
-		streamProtocol: 'text',
-		onError: (e) => {
-			const message = handleGenerateError(e);
-			error = message;
-		},
-		async onResponse(response) {
-			// using useCompletion with generateObject cause issue when getting completion, ignore it by prioritize handle response
-			await Effect.gen(function* () {
-				const data = yield* Effect.tryPromise({
-					try: () => response.json(),
-					catch: (e) =>
-						new JSONParseError({
-							parseErrorMessage: e instanceof Error ? e.message : 'Failed to parse response'
-						})
-				});
-				vocabulary = data;
-			}).pipe(Effect.runPromise);
-		}
+	const { append, isLoading, messages, setMessages } = useChat({
+		api: '/api/generateVocabulary'
 	});
 </script>
 
@@ -51,14 +20,17 @@
 		class={buttonVariants({ variant: 'default' })}
 		on:click={() => {
 			error = '';
-			vocabulary = null;
 			Sentry.startSpan(
 				{
 					name: 'Generate Vocabulary',
 					op: 'Generate'
 				},
-				async () => {
-					await complete(level);
+				() => {
+          setMessages([])
+					append({
+						role: 'user',
+						content: level
+					});
 				}
 			);
 		}}
@@ -69,66 +41,24 @@
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title>單字</Dialog.Title>
-			<Dialog.Description>
-				{#if $isLoading}
-					Loading...
-				{:else if vocabulary}
-					<div class="py-4 space-y-4">
-						<div class="flex items-center space-x-4">
-							<h2 class="text-2xl font-bold">{vocabulary.vocabulary}</h2>
-							{#if vocabulary.kana}
-								<span class="text-xl text-muted-foreground">({vocabulary.kana})</span>
-							{/if}
-							<span class="text-sm bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-								{vocabulary.type}
-							</span>
-						</div>
-						<div>
-							<h3 class="text-lg font-semibold mb-2">Variants</h3>
-							<ScrollArea class="h-40 w-full rounded-md border">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>活用</TableHead>
-											<TableHead>變化</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{#each vocabulary.variants ?? [] as variant}
-											<Row>
-												<Cell>{variant.type}</Cell>
-												<Cell>{variant.form}</Cell>
-											</Row>
-										{/each}
-									</TableBody>
-								</Table>
-							</ScrollArea>
-						</div>
-						<div>
-							<h3 class="text-lg font-semibold mb-2">Meanings and Examples</h3>
-							{#each vocabulary.explanations as explanation, index}
-								<div class="mb-4">
-									<h4 class="font-medium">
-										{index + 1}. {explanation.meaning}
-									</h4>
-									{#if explanation.usage}
-										<p>{explanation.usage}</p>
-									{/if}
-									<p class="text-sm text-muted-foreground">
-										{explanation.example}
-									</p>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{:else if error}
-					<Alert.Root variant="destructive">
-						<CircleAlert class="h-4 w-4" />
-						<Alert.Title>Generate Error</Alert.Title>
-						<Alert.Description>{error}</Alert.Description>
-					</Alert.Root>
-				{/if}
-			</Dialog.Description>
 		</Dialog.Header>
+		{#if error}
+			<Alert.Root variant="destructive">
+				<CircleAlert class="h-4 w-4" />
+				<Alert.Title>Generate Error</Alert.Title>
+				<Alert.Description>{error}</Alert.Description>
+			</Alert.Root>
+		{:else if $messages.length > 1}
+			<ScrollArea class="h-[60vh]">
+				{#each $messages as message}
+					{#if message.role === 'assistant'}
+						{@html marked(message.content)}
+					{/if}
+				{/each}
+			</ScrollArea>
+		{/if}
+		{#if $isLoading}
+			Loading...
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
