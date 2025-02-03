@@ -70,7 +70,7 @@
 				<p class="text-sm text-muted-foreground">
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
-				<form on:submit={handleSubmit}>
+				<form on:submit={handleSubmit} id="chat-bot">
 					<div class="flex items-center space-x-2">
 						{#if $isLoading}
 							<Button
@@ -83,7 +83,18 @@
 								<span>Cancel Generation</span>
 							</Button>
 						{:else}
-							<Textarea bind:value={$input} placeholder="Type your message..." />
+							<Textarea
+								bind:value={$input}
+								placeholder="Type your message..."
+								on:keydown={(e) => {
+									if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
+										return;
+									}
+									e.stopPropagation();
+									handleSubmit();
+									return;
+								}}
+							/>
 							<Button type="submit">Send</Button>
 						{/if}
 						<Button
