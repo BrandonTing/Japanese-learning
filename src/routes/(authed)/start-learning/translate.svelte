@@ -4,11 +4,10 @@
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import { Textarea } from '@/components/ui/textarea';
-	import { useCompletion } from '@ai-sdk/svelte';
+	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { CircleAlert } from 'lucide-svelte';
 	import { marked } from 'marked';
-	import { handleGenerateError } from './util';
 	let text = '';
 	const accordionTypes = {
 		CORRECTNESS: 'Check_Correctness',
@@ -21,13 +20,8 @@
 		CORRECTNESS: '',
 		EXPLAIN: ''
 	} satisfies Omit<Record<keyof typeof accordionTypes, string>, 'NONE'>;
-	const { complete, completion, stop, isLoading } = useCompletion({
-		api: '/api/completion/translation',
-		streamProtocol: 'text',
-		onError: (e) => {
-			const message = handleGenerateError(e);
-			error = message;
-		}
+	const { messages, append, isLoading, stop, setMessages } = useChat({
+		api: '/api/translation'
 	});
 </script>
 
@@ -58,16 +52,21 @@
 						return;
 					}
 					history.CORRECTNESS = text;
+					history.EXPLAIN = '';
 					Sentry.startSpan(
 						{
 							name: 'Translate and Check Grammer',
 							op: 'Translate'
 						},
-						async () => {
-							await complete(`
-                請協助我翻譯以下句子，並判斷其中文法是否正確：
-                ${text}
-              `);
+						() => {
+							setMessages([]);
+							append({
+								role: 'user',
+								content: `
+                    請協助我翻譯以下句子，並判斷其中文法是否正確：
+                    ${text}
+                  `
+							});
 						}
 					);
 				}}
@@ -81,17 +80,21 @@
 						return;
 					}
 					history.EXPLAIN = text;
-
+					history.CORRECTNESS = '';
 					Sentry.startSpan(
 						{
 							name: 'Translate and Explain Grammer',
 							op: 'Translate'
 						},
-						async () => {
-							await complete(`
-                請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
-                ${text}
-              `);
+						() => {
+							setMessages([]);
+							append({
+								role: 'user',
+								content: `
+                  請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
+                  ${text}
+                `
+							});
 						}
 					);
 				}}
@@ -99,6 +102,26 @@
 				>Translate and Explain Grammer</Button
 			>
 		</div>
+		<Accordion.Root bind:value={accordionValue}>
+			<Accordion.Item value={accordionTypes.CORRECTNESS} class="border-0">
+				<Accordion.Content class="text-base">
+					{#each $messages as message}
+						{#if message.role === 'assistant'}
+							{@html marked(message.content)}
+						{/if}
+					{/each}
+				</Accordion.Content>
+			</Accordion.Item>
+			<Accordion.Item value={accordionTypes.EXPLAIN} class="border-0">
+				<Accordion.Content class="text-base">
+					{#each $messages as message}
+						{#if message.role === 'assistant'}
+							{@html marked(message.content)}
+						{/if}
+					{/each}
+				</Accordion.Content>
+			</Accordion.Item>
+		</Accordion.Root>
 		{#if $isLoading}
 			Loading...
 		{:else if error}
@@ -108,13 +131,5 @@
 				<Alert.Description>{error}</Alert.Description>
 			</Alert.Root>
 		{/if}
-		<Accordion.Root bind:value={accordionValue}>
-			<Accordion.Item value={accordionTypes.CORRECTNESS} class="border-0">
-				<Accordion.Content class="text-base">{@html marked($completion)}</Accordion.Content>
-			</Accordion.Item>
-			<Accordion.Item value={accordionTypes.EXPLAIN} class="border-0">
-				<Accordion.Content class="text-base">{@html marked($completion)}</Accordion.Content>
-			</Accordion.Item>
-		</Accordion.Root>
 	</CardContent>
 </Card>
