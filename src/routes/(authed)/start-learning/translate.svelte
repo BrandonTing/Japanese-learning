@@ -17,6 +17,10 @@
 	} as const;
 	let accordionValue: (typeof accordionTypes)[keyof typeof accordionTypes] = '';
 	let error = '';
+	let history = {
+		CORRECTNESS: '',
+		EXPLAIN: ''
+	} satisfies Omit<Record<keyof typeof accordionTypes, string>, 'NONE'>;
 	const { complete, completion, stop, isLoading } = useCompletion({
 		api: '/api/completion/translation',
 		streamProtocol: 'text',
@@ -42,7 +46,6 @@
 					onclick={() => {
 						error = '';
 						accordionValue = accordionTypes.NONE;
-						console.log($completion);
 						stop();
 					}}>Close</Button
 				>
@@ -51,6 +54,10 @@
 			<Button
 				onclick={() => {
 					accordionValue = accordionTypes.CORRECTNESS;
+					if (history.CORRECTNESS === text) {
+						return;
+					}
+					history.CORRECTNESS = text;
 					Sentry.startSpan(
 						{
 							name: 'Translate and Check Grammer',
@@ -70,6 +77,11 @@
 			<Button
 				onclick={() => {
 					accordionValue = accordionTypes.EXPLAIN;
+					if (history.EXPLAIN === text) {
+						return;
+					}
+					history.EXPLAIN = text;
+
 					Sentry.startSpan(
 						{
 							name: 'Translate and Explain Grammer',
