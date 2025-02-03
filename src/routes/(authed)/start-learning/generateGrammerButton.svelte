@@ -69,8 +69,8 @@
 								<h2 class="text-2xl font-bold">
 									{grammer.grammer}
 								</h2>
-								{#if grammer.kana}
-									<span class="text-xl text-muted-foreground">({grammer.kana})</span>
+								{#if grammer.romaji}
+									<span class="text-xl text-muted-foreground">({grammer.romaji})</span>
 								{/if}
 							</div>
 							<div class="mt-4">
@@ -79,11 +79,11 @@
 							</div>
 							<div class="mt-4">
 								<h3 class="text-lg font-semibold mb-2">Examples</h3>
-								{#each grammer.examples as example, index}
+								{#each grammer.examples as example}
 									<div class="mb-4">
 										<p class="font-medium">{example.sentence}</p>
-										{#if example.kana}
-											<p class="text-sm text-muted-foreground">{example.kana}</p>
+										{#if example.romaji}
+											<p class="text-sm text-muted-foreground">{example.romaji}</p>
 										{/if}
 										<p class="text-sm text-muted-foreground">{example.meaning}</p>
 									</div>

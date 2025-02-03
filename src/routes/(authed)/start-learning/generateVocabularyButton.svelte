@@ -76,34 +76,36 @@
 					<div class="py-4 space-y-4">
 						<div class="flex items-center space-x-4">
 							<h2 class="text-2xl font-bold">{vocabulary.vocabulary}</h2>
-							{#if vocabulary.kana}
-								<span class="text-xl text-muted-foreground">({vocabulary.kana})</span>
+							{#if vocabulary.romaji}
+								<span class="text-xl text-muted-foreground">({vocabulary.romaji})</span>
 							{/if}
 							<span class="text-sm bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
 								{vocabulary.type}
 							</span>
 						</div>
-						<div>
-							<h3 class="text-lg font-semibold mb-2">Variants</h3>
-							<ScrollArea class="h-40 w-full rounded-md border">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>活用</TableHead>
-											<TableHead>變化</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{#each vocabulary.variants ?? [] as variant}
-											<Row>
-												<Cell>{variant.type}</Cell>
-												<Cell>{variant.form}</Cell>
-											</Row>
-										{/each}
-									</TableBody>
-								</Table>
-							</ScrollArea>
-						</div>
+						{#if vocabulary.variants.length > 0}
+							<div>
+								<h3 class="text-lg font-semibold mb-2">Variants</h3>
+								<ScrollArea class="h-40 w-full rounded-md border">
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>活用</TableHead>
+												<TableHead>變化</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{#each vocabulary.variants ?? [] as variant}
+												<Row>
+													<Cell>{variant.type}</Cell>
+													<Cell>{variant.form}</Cell>
+												</Row>
+											{/each}
+										</TableBody>
+									</Table>
+								</ScrollArea>
+							</div>
+						{/if}
 						<div>
 							<h3 class="text-lg font-semibold mb-2">Meanings and Examples</h3>
 							{#each vocabulary.explanations as explanation, index}
@@ -115,7 +117,11 @@
 										<p>{explanation.usage}</p>
 									{/if}
 									<p class="text-sm text-muted-foreground">
-										{explanation.example}
+										{explanation.example.meaning}
+										<br />
+										{explanation.example.sentence}
+										<br />
+										{explanation.example.romaji}
 									</p>
 								</div>
 							{/each}
