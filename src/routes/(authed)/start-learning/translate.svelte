@@ -34,7 +34,7 @@
 	</CardHeader>
 	<CardContent class="flex gap-4 flex-col">
 		<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
-		<div class="flex justify-end gap-2">
+		<div class="flex justify-end gap-2 flex-col md:flex-row">
 			{#if accordionValue !== accordionTypes.NONE}
 				<Button
 					onclick={() => {
