@@ -38,7 +38,7 @@
 		<nav class="flex items-center justify-between h-16">
 			<div class="flex items-center gap-4">
 				<h1 class="text-xl font-bold mr-8">Japanese Learning Platform</h1>
-				<div class="hidden md:block">
+				<div class="hidden md:flex gap-4 ">
 					{#each mainNavItems as nav}
 						<a
 							href={nav.href}
@@ -63,7 +63,7 @@
 							<DropdownMenu.Group>
 								{#each externalResources as externalResource}
 									<DropdownMenu.Item>
-										<Tooltip.Root openDelay={200} closeDelay={50} group="external">
+										<Tooltip.Root openDelay={200} group="external">
 											<Tooltip.Trigger class="h-full w-full">
 												<a href={externalResource.href} target="_blank" class="h-full w-full">
 													{externalResource.title}
@@ -73,7 +73,7 @@
 												<p>{externalResource.description}</p>
 											</Tooltip.Content>
 										</Tooltip.Root>
-									</DropdownMenu.Item>
+									</DropdownMenu.Item>ㄏ
 								{/each}
 							</DropdownMenu.Group>
 						</DropdownMenu.Content>
