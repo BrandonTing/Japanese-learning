@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import {
 		Select,
 		SelectContent,
@@ -23,14 +22,11 @@
 	}>({ value: '單字', label: '單字' });
 </script>
 
-<Card class="w-full">
-	<CardHeader>
-		<CardTitle>Teach me something New</CardTitle>
-		<p class="text-sm text-muted-foreground">
-			Get a quick lesson on Japanese vocabulary or grammar patterns.
-		</p>
-	</CardHeader>
-	<CardContent class="flex items-center gap-4">
+<div class="flex gap-4 flex-col px-1">
+	<p class="text-sm text-muted-foreground">
+		Get a quick lesson on Japanese vocabulary or grammar patterns.
+	</p>
+	<div class="flex items-center gap-4">
 		<Select bind:selected={learningLevel}>
 			<SelectTrigger class="w-32">
 				<SelectValue placeholder="Select Level" />
@@ -56,5 +52,5 @@
 		{:else}
 			<GenerateGrammerButton level={learningLevel.value} />
 		{/if}
-	</CardContent>
-</Card>
+	</div>
+</div>

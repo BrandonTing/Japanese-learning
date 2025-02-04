@@ -72,7 +72,7 @@
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
 				<form on:submit={handleSubmit} id="chat-bot">
-					<div class="flex items-center space-x-2">
+					<div class="flex gap-1 flex-col md:flex-row md:gap-2 md:items-end">
 						{#if $isLoading}
 							<Button
 								class="flex-1"
@@ -106,7 +106,7 @@
 							}}
 						>
 							<PlusCircle class="w-4 h-4" />
-							<span class="sr-only">Create New Chat</span>
+							<span class="md:sr-only ml-1">Create New Chat</span>
 						</Button>
 					</div>
 				</form>
