@@ -34,7 +34,7 @@
 </script>
 
 <header class="w-full bg-background border-b mb-8">
-	<div class="container mx-auto px-4">
+	<div class="container mx-auto px-0">
 		<nav class="flex items-center justify-between h-16">
 			<div class="flex items-center gap-4">
 				<h1 class="text-xl font-bold mr-8">Japanese Learning Platform</h1>

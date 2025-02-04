@@ -22,30 +22,35 @@
 	}>({ value: '單字', label: '單字' });
 </script>
 
-<div class="flex items-center gap-4">
-	<Select bind:selected={learningLevel}>
-		<SelectTrigger class="w-32">
-			<SelectValue placeholder="Select Level" />
-		</SelectTrigger>
-		<SelectContent>
-			{#each levels as level}
-				<SelectItem value={level}>{level}</SelectItem>
-			{/each}
-		</SelectContent>
-	</Select>
-	<Select bind:selected={learningCategory}>
-		<SelectTrigger class="w-32">
-			<SelectValue placeholder="Select Topic" />
-		</SelectTrigger>
-		<SelectContent>
-			{#each learningCategories as category}
-				<SelectItem value={category}>{category}</SelectItem>
-			{/each}
-		</SelectContent>
-	</Select>
-	{#if learningCategory.value === '單字'}
-		<GenerateVocabularyButton level={learningLevel.value} />
-	{:else}
-		<GenerateGrammerButton level={learningLevel.value} />
-	{/if}
+<div class="flex gap-4 flex-col px-1">
+	<p class="text-sm text-muted-foreground">
+		Get a quick lesson on Japanese vocabulary or grammar patterns.
+	</p>
+	<div class="flex items-center gap-4">
+		<Select bind:selected={learningLevel}>
+			<SelectTrigger class="w-32">
+				<SelectValue placeholder="Select Level" />
+			</SelectTrigger>
+			<SelectContent>
+				{#each levels as level}
+					<SelectItem value={level}>{level}</SelectItem>
+				{/each}
+			</SelectContent>
+		</Select>
+		<Select bind:selected={learningCategory}>
+			<SelectTrigger class="w-32">
+				<SelectValue placeholder="Select Topic" />
+			</SelectTrigger>
+			<SelectContent>
+				{#each learningCategories as category}
+					<SelectItem value={category}>{category}</SelectItem>
+				{/each}
+			</SelectContent>
+		</Select>
+		{#if learningCategory.value === '單字'}
+			<GenerateVocabularyButton level={learningLevel.value} />
+		{:else}
+			<GenerateGrammerButton level={learningLevel.value} />
+		{/if}
+	</div>
 </div>

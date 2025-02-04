@@ -24,7 +24,10 @@
 	});
 </script>
 
-<div class="flex gap-4 flex-col">
+<div class="flex gap-4 flex-col px-1">
+	<p class="text-sm text-muted-foreground">
+		Paste a Japanese article for translation and grammar explanation.
+	</p>
 	<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
 	<div class="flex justify-end gap-2 flex-col md:flex-row">
 		{#if accordionValue !== accordionTypes.NONE}
