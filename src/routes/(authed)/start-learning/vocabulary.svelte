@@ -1,18 +1,20 @@
 <script lang="ts">
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Alert from '$lib/components/ui/alert/index.js';
+	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import Input from '@/components/ui/input/input.svelte';
+	import { vocabularyMap } from '@/states/vocabularySearchStore';
 	import { useChat } from '@ai-sdk/svelte';
-	import { CircleAlert } from 'lucide-svelte';
 	import { marked } from 'marked';
 	const VOCABULARY_ACCORDION_VALUE = 'VOCABULARY_ACCORDION_VALUE';
 	let text = '';
-	let error = '';
-	let lastVocabulary = '';
 	let accordionValue = '';
-	const { messages, append, isLoading, stop, setMessages } = useChat({
-		api: '/api/vocabulary'
+	let content = '';
+	const { messages, append, isLoading, stop, setMessages, error } = useChat({
+		api: '/api/vocabulary',
+		onFinish(message) {
+			$vocabularyMap[text] = message.content;
+		}
 	});
 </script>
 
@@ -30,10 +32,11 @@
 		<Button
 			onclick={() => {
 				accordionValue = VOCABULARY_ACCORDION_VALUE;
-				if (text === lastVocabulary) {
+				if ($vocabularyMap[text]) {
+					content = $vocabularyMap[text];
 					return;
 				}
-				lastVocabulary = text;
+				content = '';
 				setMessages([]);
 				append({
 					role: 'user',
@@ -48,7 +51,6 @@
 		{#if accordionValue !== ''}
 			<Button
 				onclick={() => {
-					error = '';
 					accordionValue = '';
 					stop();
 				}}>Close</Button
@@ -58,21 +60,21 @@
 	<Accordion.Root bind:value={accordionValue}>
 		<Accordion.Item value={VOCABULARY_ACCORDION_VALUE} class="border-0">
 			<Accordion.Content class="text-base">
-				{#each $messages as message}
-					{#if message.role === 'assistant'}
-						{@html marked(message.content)}
-					{/if}
-				{/each}
+				{#if content}
+					{@html marked(content)}
+				{:else}
+					{#each $messages as message}
+						{#if message.role === 'assistant'}
+							{@html marked(message.content)}
+						{/if}
+					{/each}
+				{/if}
 			</Accordion.Content>
 		</Accordion.Item>
 	</Accordion.Root>
 	{#if $isLoading}
 		Loading...
-	{:else if error}
-		<Alert.Root variant="destructive">
-			<CircleAlert class="h-4 w-4" />
-			<Alert.Title>Generate Error</Alert.Title>
-			<Alert.Description>{error}</Alert.Description>
-		</Alert.Root>
+	{:else if $error}
+		<ErrorMessage message={$error.message} />
 	{/if}
 </div>

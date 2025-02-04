@@ -1,11 +1,10 @@
 <script lang="ts">
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Alert from '$lib/components/ui/alert/index.js';
+	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea';
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
-	import { CircleAlert } from 'lucide-svelte';
 	import { marked } from 'marked';
 	let text = '';
 	const accordionTypes = {
@@ -14,12 +13,11 @@
 		NONE: ''
 	} as const;
 	let accordionValue: (typeof accordionTypes)[keyof typeof accordionTypes] = '';
-	let error = '';
 	let history = {
 		CORRECTNESS: '',
 		EXPLAIN: ''
 	} satisfies Omit<Record<keyof typeof accordionTypes, string>, 'NONE'>;
-	const { messages, append, isLoading, stop, setMessages } = useChat({
+	const { messages, append, isLoading, stop, setMessages, error } = useChat({
 		api: '/api/translation'
 	});
 </script>
@@ -33,7 +31,6 @@
 		{#if accordionValue !== accordionTypes.NONE}
 			<Button
 				onclick={() => {
-					error = '';
 					accordionValue = accordionTypes.NONE;
 					stop();
 				}}>Close</Button
@@ -119,11 +116,7 @@
 	</Accordion.Root>
 	{#if $isLoading}
 		Loading...
-	{:else if error}
-		<Alert.Root variant="destructive">
-			<CircleAlert class="h-4 w-4" />
-			<Alert.Title>Generate Error</Alert.Title>
-			<Alert.Description>{error}</Alert.Description>
-		</Alert.Root>
+	{:else if $error}
+		<ErrorMessage message={$error.message} />
 	{/if}
 </div>

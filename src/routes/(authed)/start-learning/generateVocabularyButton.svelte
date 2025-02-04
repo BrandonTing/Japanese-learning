@@ -1,16 +1,13 @@
 <script lang="ts">
-	import * as Alert from '$lib/components/ui/alert/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { buttonVariants } from '@/components/ui/button';
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
-	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import { marked } from 'marked';
-
-	let error = '';
 	export let level: string;
-	const { append, isLoading, messages, setMessages } = useChat({
+	const { append, isLoading, messages, setMessages, error } = useChat({
 		api: '/api/generateVocabulary'
 	});
 </script>
@@ -19,14 +16,13 @@
 	<Dialog.Trigger
 		class={buttonVariants({ variant: 'default' })}
 		on:click={() => {
-			error = '';
 			Sentry.startSpan(
 				{
 					name: 'Generate Vocabulary',
 					op: 'Generate'
 				},
 				() => {
-          setMessages([])
+					setMessages([]);
 					append({
 						role: 'user',
 						content: level
@@ -42,13 +38,7 @@
 		<Dialog.Header>
 			<Dialog.Title>單字</Dialog.Title>
 		</Dialog.Header>
-		{#if error}
-			<Alert.Root variant="destructive">
-				<CircleAlert class="h-4 w-4" />
-				<Alert.Title>Generate Error</Alert.Title>
-				<Alert.Description>{error}</Alert.Description>
-			</Alert.Root>
-		{:else if $messages.length > 1}
+		{#if $messages.length > 1}
 			<ScrollArea class="h-[60vh]">
 				{#each $messages as message}
 					{#if message.role === 'assistant'}
@@ -56,6 +46,9 @@
 					{/if}
 				{/each}
 			</ScrollArea>
+		{/if}
+		{#if $error}
+			<ErrorMessage message={$error.message} />
 		{/if}
 		{#if $isLoading}
 			Loading...
