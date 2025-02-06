@@ -18,6 +18,9 @@ class UserSetting {
     localStorage.setItem(localStorageKey, type)
   }
   setCssVariable(cursorType: CursorType) {
+    if (cursorType === "default") {
+      return
+    }
     Object.entries(typeVariableNameMap).forEach(value => {
       const [key, { prefix, amount }] = value
       for (let i = 1; i <= amount; i++) {
