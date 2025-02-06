@@ -9,6 +9,7 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import { loginState } from '@/states/loginState.svelte';
 	import { ChevronDown, Loader, LogOut, Menu } from 'lucide-svelte';
+	import { userInfoNavItems } from '../../../routes/(authed)/user-info/utils';
 
 	const mainNavItems = [
 		{ title: 'Start Learning!', href: '/start-learning' }
@@ -89,7 +90,7 @@
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>
 						<Avatar.Root class="hidden md:flex">
-							<Avatar.Image src="./user.svg" alt={username} />
+							<Avatar.Image src="/user.svg" alt={username} />
 						</Avatar.Root>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content>
@@ -98,7 +99,7 @@
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item
 								on:click={() => {
-									goto('./user-info');
+									goto(`/user-info${userInfoNavItems[0].href}`);
 								}}
 							>
 								User Info
@@ -126,30 +127,18 @@
 					<Sheet.Content side="right">
 						<nav class="flex flex-col space-y-4">
 							<Sheet.Close class="flex flex-col space-y-4">
-								{#each mainNavItems as nav}
+								{#each [...mainNavItems, { href: `/user-info${userInfoNavItems[0].href}`, title: 'User Info' }] as nav}
+									{@const isActive = page.url.pathname.includes(nav.href)}
 									<a
 										href={nav.href}
 										class={[
 											'hover:text-primary text-base font-medium transition-colors',
-											page.url.pathname.includes(nav.href)
-												? 'text-primary'
-												: 'text-muted-foreground'
+											isActive ? 'text-primary' : 'text-muted-foreground'
 										]}
 									>
 										{nav.title}
 									</a>
 								{/each}
-								<a
-									href="/user-info"
-									class={[
-										'hover:text-primary text-base font-medium transition-colors',
-										page.url.pathname.includes('/user-info')
-											? 'text-primary'
-											: 'text-muted-foreground'
-									]}
-								>
-									User Info
-								</a>
 							</Sheet.Close>
 
 							<div class="pt-4 border-t">
