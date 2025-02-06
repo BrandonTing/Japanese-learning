@@ -16,6 +16,7 @@
 		<form onsubmit={(e) => loginState.handleSubmit(e)} class="space-y-4">
 			<div>
 				<Input
+					autocomplete="email"
 					type="text"
 					placeholder="Email"
 					bind:value={loginState.user.email}
@@ -24,6 +25,7 @@
 			</div>
 			<div>
 				<Input
+					autocomplete={loginState.isSignUp ? 'new-password' : 'current-password'}
 					type="password"
 					placeholder="Password"
 					bind:value={loginState.user.password}
