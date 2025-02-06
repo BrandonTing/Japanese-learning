@@ -93,134 +93,146 @@
   }
 
   a, button, [role="button"] {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_01.png"), pointer;
-    -webkit-animation: cursor 500ms infinite;
-    animation: cursor 500ms infinite;
+    -webkit-animation: cursor 1.5s infinite;
+    animation: cursor 1.5s infinite;
   }
 
   input,
   textarea {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_01.png"), text;
-    -webkit-animation: cursor-text 500ms infinite;
-    animation: cursor-text 500ms infinite;
+    -webkit-animation: cursor-text 1.5s infinite;
+    animation: cursor-text 1.5s infinite;
   }
 }
 
 @layer utilities {
   .cursor-pointer {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_01.png"), text;
-    -webkit-animation: cursor 500ms infinite;
-    animation: cursor 500ms infinite;
+    -webkit-animation: cursor 1.5s infinite;
+    animation: cursor 1.5s infinite;
   }
 
   .cursor-text {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_01.png"), text;
-    -webkit-animation: cursor-text 500ms infinite;
-    animation: cursor-text 500ms infinite;
+    -webkit-animation: cursor-text 1.5s infinite;
+    animation: cursor-text 1.5s infinite;
   }
 }
 
 
 @-webkit-keyframes cursor {
   0% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_01.png"), auto;
+    cursor: var(--cursor-image-1), auto;
   }
 
-  20% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_02.png"), auto;
+  17% {
+    cursor: var(--cursor-image-2), auto;
   }
 
-  40% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_03.png"), auto;
+  34% {
+    cursor: var(--cursor-image-3), auto;
   }
 
-  60% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_04.png"), auto;
+  51% {
+    cursor: var(--cursor-image-4), auto;
   }
 
-  80% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_05.png"), auto;
+  68% {
+    cursor: var(--cursor-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-image-6), auto;
   }
 
   100% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_06.png"), auto;
+    cursor: var(--cursor-image-1), auto;
   }
 }
 
 @keyframes cursor {
   0% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_01.png"), auto;
+    cursor: var(--cursor-image-1), auto;
   }
 
-  20% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_02.png"), auto;
+  17% {
+    cursor: var(--cursor-image-2), auto;
   }
 
-  40% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_03.png"), auto;
+  34% {
+    cursor: var(--cursor-image-3), auto;
   }
 
-  60% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_04.png"), auto;
+  51% {
+    cursor: var(--cursor-image-4), auto;
   }
 
-  80% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_05.png"), auto;
+  68% {
+    cursor: var(--cursor-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-image-6), auto;
   }
 
   100% {
-    cursor: url("./cursor-image/azki/pointer/AZKi[nomal_select]_06.png"), auto;
+    cursor: var(--cursor-image-1), auto;
   }
 }
 
 @-webkit-keyframes cursor-text {
   0% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_01.png"), auto;
+    cursor: var(--cursor-text-image-1), auto;
   }
 
-  20% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_02.png"), auto;
+  17% {
+    cursor: var(--cursor-text-image-2), auto;
   }
 
-  40% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_03.png"), auto;
+  34% {
+    cursor: var(--cursor-text-image-3), auto;
   }
 
-  60% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_04.png"), auto;
+  51% {
+    cursor: var(--cursor-text-image-4), auto;
   }
 
-  80% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_05.png"), auto;
+  68% {
+    cursor: var(--cursor-text-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-text-image-6), auto;
   }
 
   100% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_06.png"), auto;
+    cursor: var(--cursor-text-image-1), auto;
   }
 }
 
 @keyframes cursor-text {
   0% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_01.png"), auto;
+    cursor: var(--cursor-text-image-1), auto;
   }
 
-  20% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_02.png"), auto;
+  17% {
+    cursor: var(--cursor-text-image-2), auto;
   }
 
-  40% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_03.png"), auto;
+  34% {
+    cursor: var(--cursor-text-image-3), auto;
   }
 
-  60% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_04.png"), auto;
+  51% {
+    cursor: var(--cursor-text-image-4), auto;
   }
 
-  80% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_05.png"), auto;
+  68% {
+    cursor: var(--cursor-text-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-text-image-6), auto;
   }
 
   100% {
-    cursor: url("./cursor-image/azki/text/AZKi[text_select]_06.png"), auto;
+    cursor: var(--cursor-text-image-1), auto;
   }
 }
