@@ -38,7 +38,7 @@
 		<nav class="flex items-center justify-between h-16">
 			<div class="flex items-center gap-4">
 				<h1 class="text-xl font-bold mr-8">Japanese Learning Platform</h1>
-				<div class="hidden md:flex gap-4 ">
+				<div class="hidden md:flex gap-4">
 					{#each mainNavItems as nav}
 						<a
 							href={nav.href}
@@ -73,7 +73,7 @@
 												<p>{externalResource.description}</p>
 											</Tooltip.Content>
 										</Tooltip.Root>
-									</DropdownMenu.Item>ㄏ
+									</DropdownMenu.Item>
 								{/each}
 							</DropdownMenu.Group>
 						</DropdownMenu.Content>

@@ -2,7 +2,6 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { getImgsVariable } from '@/cursorUtil';
 	import '../app.css';
-
 	let { children } = $props();
 </script>
 
