@@ -41,7 +41,7 @@
 		<MessageSquare class="w-6 h-6" />
 		<span class="sr-only">Ask AI</span>
 	</Drawer.Trigger>
-	<Drawer.Content>
+	<Drawer.Content class="cursor">
 		<Drawer.Header>
 			<Drawer.Title>Ask AI</Drawer.Title>
 			<Drawer.Description>

@@ -4,8 +4,10 @@
 	let { children } = $props();
 </script>
 
-<Toaster richColors position="bottom-center" />
+<div class="cursor w-lvw h-lvh">
+	<Toaster richColors position="bottom-center" />
 
-<div class="container mx-auto p-4">
-	{@render children()}
+	<div class="container mx-auto p-4">
+		{@render children()}
+	</div>
 </div>
