@@ -71,7 +71,6 @@
 @layer base {
   * {
     @apply border-border;
-
   }
 
   body {
@@ -93,8 +92,8 @@
   }
 
   a, button, [role="button"] {
-    -webkit-animation: cursor 1.5s infinite;
-    animation: cursor 1.5s infinite;
+    -webkit-animation: cursor-pointer 1.5s infinite;
+    animation: cursor-pointer 1.5s infinite;
   }
 
   input,
@@ -105,17 +104,26 @@
 }
 
 @layer utilities {
-  .cursor-pointer {
+  .cursor {
     -webkit-animation: cursor 1.5s infinite;
     animation: cursor 1.5s infinite;
+  }
+
+  .cursor-pointer {
+    -webkit-animation: cursor-pointer 1.5s infinite;
+    animation: cursor-pointer 1.5s infinite;
   }
 
   .cursor-text {
     -webkit-animation: cursor-text 1.5s infinite;
     animation: cursor-text 1.5s infinite;
   }
-}
 
+  .cursor-not-allowed {
+    -webkit-animation: cursor-not-allowed 1.5s infinite;
+    animation: cursor-not-allowed 1.5s infinite;
+  }
+}
 
 @-webkit-keyframes cursor {
   0% {
@@ -177,6 +185,66 @@
   }
 }
 
+@keyframes cursor-pointer {
+  0% {
+    cursor: var(--cursor-pointer-image-1), auto;
+  }
+
+  17% {
+    cursor: var(--cursor-pointer-image-2), auto;
+  }
+
+  34% {
+    cursor: var(--cursor-pointer-image-3), auto;
+  }
+
+  51% {
+    cursor: var(--cursor-pointer-image-4), auto;
+  }
+
+  68% {
+    cursor: var(--cursor-pointer-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-pointer-image-6), auto;
+  }
+
+  100% {
+    cursor: var(--cursor-pointer-image-1), auto;
+  }
+}
+
+@-webkit-keyframes cursor-pointer {
+  0% {
+    cursor: var(--cursor-pointer-image-1), auto;
+  }
+
+  17% {
+    cursor: var(--cursor-pointer-image-2), auto;
+  }
+
+  34% {
+    cursor: var(--cursor-pointer-image-3), auto;
+  }
+
+  51% {
+    cursor: var(--cursor-pointer-image-4), auto;
+  }
+
+  68% {
+    cursor: var(--cursor-pointer-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-pointer-image-6), auto;
+  }
+
+  100% {
+    cursor: var(--cursor-pointer-image-1), auto;
+  }
+}
+
 @-webkit-keyframes cursor-text {
   0% {
     cursor: var(--cursor-text-image-1), auto;
@@ -234,5 +302,66 @@
 
   100% {
     cursor: var(--cursor-text-image-1), auto;
+  }
+}
+
+
+@-webkit-keyframes cursor-not-allowed {
+  0% {
+    cursor: var(--cursor-not-allowed-image-1), auto;
+  }
+
+  17% {
+    cursor: var(--cursor-not-allowed-image-2), auto;
+  }
+
+  34% {
+    cursor: var(--cursor-not-allowed-image-3), auto;
+  }
+
+  51% {
+    cursor: var(--cursor-not-allowed-image-4), auto;
+  }
+
+  68% {
+    cursor: var(--cursor-not-allowed-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-not-allowed-image-6), auto;
+  }
+
+  100% {
+    cursor: var(--cursor-not-allowed-image-1), auto;
+  }
+}
+
+@keyframes cursor-not-allowed {
+  0% {
+    cursor: var(--cursor-not-allowed-image-1), auto;
+  }
+
+  17% {
+    cursor: var(--cursor-not-allowed-image-2), auto;
+  }
+
+  34% {
+    cursor: var(--cursor-not-allowed-image-3), auto;
+  }
+
+  51% {
+    cursor: var(--cursor-not-allowed-image-4), auto;
+  }
+
+  68% {
+    cursor: var(--cursor-not-allowed-image-5), auto;
+  }
+
+  85% {
+    cursor: var(--cursor-not-allowed-image-6), auto;
+  }
+
+  100% {
+    cursor: var(--cursor-not-allowed-image-1), auto;
   }
 }
