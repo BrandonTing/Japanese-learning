@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as Drawer from '$lib/components/ui/drawer';
+	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import Textarea from '@/components/ui/textarea/textarea.svelte';
@@ -10,7 +10,7 @@
 	let abortController = new AbortController();
 </script>
 
-<Drawer.Root
+<Sheet.Root
 	onOpenChange={(open) => {
 		if (open) {
 			if (abortController.signal.aborted) {
@@ -32,7 +32,7 @@
 		}
 	}}
 >
-	<Drawer.Trigger
+	<Sheet.Trigger
 		class={buttonVariants({
 			variant: 'default',
 			class: 'fixed bottom-4 right-4 rounded-full w-16 h-16'
@@ -40,14 +40,14 @@
 	>
 		<MessageSquare class="w-6 h-6" />
 		<span class="sr-only">Ask AI</span>
-	</Drawer.Trigger>
-	<Drawer.Content class="cursor">
-		<Drawer.Header>
-			<Drawer.Title>Ask AI</Drawer.Title>
-			<Drawer.Description>
+	</Sheet.Trigger>
+	<Sheet.Content class="cursor" side="bottom">
+		<Sheet.Header>
+			<Sheet.Title>Ask AI</Sheet.Title>
+			<Sheet.Description>
 				Get help with Japanese learning, translations, and explanations.
-			</Drawer.Description>
-		</Drawer.Header>
+			</Sheet.Description>
+		</Sheet.Header>
 		<div class="p-4 flex flex-col h-[80vh]">
 			<ScrollArea class="flex-grow mb-4">
 				{#each $messages as message}
@@ -112,5 +112,5 @@
 				</form>
 			</div>
 		</div>
-	</Drawer.Content>
-</Drawer.Root>
+	</Sheet.Content>
+</Sheet.Root>
