@@ -7,10 +7,12 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { authClient } from '@/auth-client';
 	import Button from '@/components/ui/button/button.svelte';
+	import { getYYYYMMDD, getYYYYMMDDHirakana } from '@/dates';
+	import { headerDateState } from '@/states/headerDates.svelte';
 	import { loginState } from '@/states/loginState.svelte';
 	import { ChevronDown, Loader, LogOut, Menu } from 'lucide-svelte';
+	import { fade } from 'svelte/transition';
 	import { userInfoNavItems } from '../../../routes/(authed)/user-info/utils';
-
 	const mainNavItems = [
 		{ title: 'Start Learning!', href: '/start-learning' }
 		// TODO not implemented yet
@@ -43,7 +45,38 @@
 	<div class="container mx-auto px-0">
 		<nav class="flex items-center justify-between h-16">
 			<div class="flex items-center gap-4">
-				<h1 class="text-xl font-bold mr-8">Japanese Learning Platform</h1>
+				<div>
+					<h1 class="text-xl font-bold mr-8">Japanese Learning Platform</h1>
+					<div class="relative h-[16px]">
+						{#if headerDateState.displayMode === 'Kanji'}
+							<button
+								class="text-sm text-muted-foreground absolute left-0"
+								onmouseenter={() => {
+									headerDateState.toggleDisplayMode();
+								}}
+								onclick={() => {
+									headerDateState.toggleDisplayMode();
+								}}
+								transition:fade
+							>
+								{getYYYYMMDD()}
+							</button>
+						{:else}
+							<button
+								class="text-sm text-muted-foreground absolute left-0"
+								onmouseleave={() => {
+									headerDateState.toggleDisplayMode();
+								}}
+								onclick={() => {
+									headerDateState.toggleDisplayMode();
+								}}
+								transition:fade
+							>
+								{getYYYYMMDDHirakana()}
+							</button>
+						{/if}
+					</div>
+				</div>
 				<div class="hidden md:flex gap-4">
 					{#each mainNavItems as nav}
 						<a
