@@ -33,16 +33,13 @@
 			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
 		{/if}
 	</div>
-	<div class="flex justify-end gap-2 flex-col md:flex-row">
-		{#if accordionValue !== accordionTypes.NONE}
-			<Button
-				onclick={() => {
-					accordionValue = accordionTypes.NONE;
-					stop();
-				}}>Close</Button
-			>
-		{/if}
-
+	<div class="flex justify-end gap-2">
+		<Button
+			variant="outline"
+			class="block md:hidden"
+			disabled={!text.trim()}
+			onclick={() => (text = '')}>Clear</Button
+		>
 		<Button
 			onclick={() => {
 				accordionValue = accordionTypes.CORRECTNESS;
@@ -68,8 +65,7 @@
 					}
 				);
 			}}
-			disabled={!text.trim() || accordionValue === accordionTypes.CORRECTNESS}
-			>Translate and Check Grammer</Button
+			disabled={!text.trim() || accordionValue === accordionTypes.CORRECTNESS}>Check</Button
 		>
 		<Button
 			onclick={() => {
@@ -96,9 +92,16 @@
 					}
 				);
 			}}
-			disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}
-			>Translate and Explain Grammer</Button
+			disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}>Explain</Button
 		>
+		{#if accordionValue !== accordionTypes.NONE}
+			<Button
+				onclick={() => {
+					accordionValue = accordionTypes.NONE;
+					stop();
+				}}>Close</Button
+			>
+		{/if}
 	</div>
 	<Accordion.Root bind:value={accordionValue}>
 		<Accordion.Item value={accordionTypes.CORRECTNESS} class="border-0">

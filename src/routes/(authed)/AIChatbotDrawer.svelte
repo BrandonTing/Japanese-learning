@@ -102,6 +102,13 @@
 									<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
 								{/if}
 							</div>
+							<Button
+								variant="outline"
+								class="block md:hidden"
+								disabled={!$input.trim()}
+								onclick={() => ($input = '')}>Clear</Button
+							>
+
 							<Button type="submit">Send</Button>
 						{/if}
 						<Button

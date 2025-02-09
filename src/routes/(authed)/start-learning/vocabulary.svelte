@@ -35,33 +35,39 @@
 				<ClearInput clear={() => (text = '')} />
 			{/if}
 		</div>
-		<Button
-			onclick={() => {
-				accordionValue = VOCABULARY_ACCORDION_VALUE;
-				if ($vocabularyMap[text]) {
-					content = $vocabularyMap[text];
-					return;
-				}
-				content = '';
-				setMessages([]);
-				append({
-					role: 'user',
-					content: text
-				});
-			}}
-			disabled={!text.trim()}
-			class="w-full sm:w-auto"
-		>
-			Explain
-		</Button>
-		{#if accordionValue !== ''}
+		<div class="flex gap-1">
+			<Button
+				variant="outline"
+				class="block md:hidden"
+				disabled={!text.trim()}
+				onclick={() => (text = '')}>Clear</Button
+			>
 			<Button
 				onclick={() => {
-					accordionValue = '';
-					stop();
-				}}>Close</Button
+					accordionValue = VOCABULARY_ACCORDION_VALUE;
+					if ($vocabularyMap[text]) {
+						content = $vocabularyMap[text];
+						return;
+					}
+					content = '';
+					setMessages([]);
+					append({
+						role: 'user',
+						content: text
+					});
+				}}
+				disabled={!text.trim()}
 			>
-		{/if}
+				Explain
+			</Button>
+			{#if accordionValue !== ''}
+				<Button
+					onclick={() => {
+						stop();
+					}}>Stop</Button
+				>
+			{/if}
+		</div>
 	</div>
 	<Accordion.Root bind:value={accordionValue}>
 		<Accordion.Item value={VOCABULARY_ACCORDION_VALUE} class="border-0">
