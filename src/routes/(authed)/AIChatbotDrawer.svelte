@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Sheet from '$lib/components/ui/sheet';
+	import ClearInput from '@/components/clearInput.svelte';
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import Textarea from '@/components/ui/textarea/textarea.svelte';
@@ -84,18 +85,23 @@
 								<span>Cancel Generation</span>
 							</Button>
 						{:else}
-							<Textarea
-								bind:value={$input}
-								placeholder="Type your message..."
-								on:keydown={(e) => {
-									if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
+							<div class="relative flex-1">
+								<Textarea
+									bind:value={$input}
+									placeholder="Type your message..."
+									on:keydown={(e) => {
+										if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
+											return;
+										}
+										e.stopPropagation();
+										handleSubmit();
 										return;
-									}
-									e.stopPropagation();
-									handleSubmit();
-									return;
-								}}
-							/>
+									}}
+								/>
+								{#if $input}
+									<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
+								{/if}
+							</div>
 							<Button type="submit">Send</Button>
 						{/if}
 						<Button

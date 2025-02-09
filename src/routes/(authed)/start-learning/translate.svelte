@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Accordion from '$lib/components/ui/accordion';
+	import ClearInput from '@/components/clearInput.svelte';
 	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea';
@@ -26,7 +27,12 @@
 	<p class="text-sm text-muted-foreground">
 		Paste a Japanese article for translation and grammar explanation.
 	</p>
-	<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
+	<div class="relative">
+		<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
+		{#if text}
+			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
+		{/if}
+	</div>
 	<div class="flex justify-end gap-2 flex-col md:flex-row">
 		{#if accordionValue !== accordionTypes.NONE}
 			<Button

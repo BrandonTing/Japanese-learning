@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Accordion from '$lib/components/ui/accordion';
+	import ClearInput from '@/components/clearInput.svelte';
 	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import Input from '@/components/ui/input/input.svelte';
@@ -23,12 +24,17 @@
 		Enter a Japanese vocabulary word to get an explanation and examples.
 	</p>
 	<div class="flex flex-col sm:flex-row md:items-center gap-4">
-		<Input
-			type="text"
-			placeholder="Enter vocabulary (e.g., 漢字)"
-			bind:value={text}
-			class="w-full sm:w-64"
-		/>
+		<div class="relative">
+			<Input
+				type="text"
+				placeholder="Enter vocabulary (e.g., 漢字)"
+				bind:value={text}
+				class="w-full sm:w-64"
+			/>
+			{#if text}
+				<ClearInput clear={() => (text = '')} />
+			{/if}
+		</div>
 		<Button
 			onclick={() => {
 				accordionValue = VOCABULARY_ACCORDION_VALUE;
