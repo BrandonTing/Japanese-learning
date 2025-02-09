@@ -46,34 +46,30 @@
 		<nav class="flex items-center justify-between h-16">
 			<div class="flex items-center gap-4">
 				<div>
-					<h1 class="text-xl font-bold mr-8">Japanese Learning Platform</h1>
-					<div class="relative h-[16px]">
+					<h1 class=" font-bold mr-8 text-lg md:text-xl">Japanese Learning Platform</h1>
+					<div class="relative h-[16px] w-[200px] md:w-auto text-base md:text-sm">
 						{#if headerDateState.displayMode === 'Kanji'}
-							<button
-								class="text-sm text-muted-foreground absolute left-0"
+							<span
+								role="status"
+								class="text-muted-foreground absolute left-0"
 								onmouseenter={() => {
-									headerDateState.toggleDisplayMode();
-								}}
-								onclick={() => {
 									headerDateState.toggleDisplayMode();
 								}}
 								transition:fade
 							>
 								{getYYYYMMDD()}
-							</button>
+							</span>
 						{:else}
-							<button
-								class="text-sm text-muted-foreground absolute left-0"
+							<span
+								role="status"
+								class="text-muted-foreground absolute left-0"
 								onmouseleave={() => {
-									headerDateState.toggleDisplayMode();
-								}}
-								onclick={() => {
 									headerDateState.toggleDisplayMode();
 								}}
 								transition:fade
 							>
 								{getYYYYMMDDHirakana()}
-							</button>
+							</span>
 						{/if}
 					</div>
 				</div>
