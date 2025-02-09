@@ -5,7 +5,7 @@
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import Textarea from '@/components/ui/textarea/textarea.svelte';
 	import { useChat } from '@ai-sdk/svelte';
-	import { MessageSquare, PlusCircle } from 'lucide-svelte';
+	import { MessageSquare } from 'lucide-svelte';
 	import { marked } from 'marked';
 	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
 	let abortController = new AbortController();
@@ -42,12 +42,9 @@
 		<MessageSquare class="w-6 h-6" />
 		<span class="sr-only">Ask AI</span>
 	</Sheet.Trigger>
-	<Sheet.Content class="cursor" side="bottom">
+	<Sheet.Content class="cursor pb-0" side="bottom">
 		<Sheet.Header>
 			<Sheet.Title>Ask AI</Sheet.Title>
-			<Sheet.Description>
-				Get help with Japanese learning, translations, and explanations.
-			</Sheet.Description>
 		</Sheet.Header>
 		<div class="p-4 flex flex-col h-[80dvh]">
 			<ScrollArea class="flex-grow mb-4">
@@ -69,7 +66,7 @@
 				{/if}
 			</ScrollArea>
 			<div class="flex flex-col space-y-2">
-				<p class="text-sm text-muted-foreground">
+				<p class="text-sm text-muted-foreground hidden md:block">
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
 				<form on:submit={handleSubmit} id="chat-bot">
@@ -102,6 +99,8 @@
 									<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
 								{/if}
 							</div>
+						{/if}
+						<div class="flex gap-1 justify-end">
 							<Button
 								variant="outline"
 								class="block md:hidden"
@@ -110,17 +109,17 @@
 							>
 
 							<Button type="submit">Send</Button>
-						{/if}
-						<Button
-							variant="outline"
-							onclick={() => {
-								stop();
-								setMessages([]);
-							}}
-						>
-							<PlusCircle class="w-4 h-4" />
-							<span class="md:sr-only ml-1">Create New Chat</span>
-						</Button>
+
+							<Button
+								variant="outline"
+								onclick={() => {
+									stop();
+									setMessages([]);
+								}}
+							>
+								New
+							</Button>
+						</div>
 					</div>
 				</form>
 			</div>
