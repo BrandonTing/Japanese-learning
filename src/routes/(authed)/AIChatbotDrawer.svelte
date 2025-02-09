@@ -49,7 +49,7 @@
 				Get help with Japanese learning, translations, and explanations.
 			</Sheet.Description>
 		</Sheet.Header>
-		<div class="p-4 flex flex-col h-[80vh]">
+		<div class="p-4 flex flex-col h-[80dvh]">
 			<ScrollArea class="flex-grow mb-4">
 				{#each $messages as message}
 					<div class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
