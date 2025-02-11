@@ -50,6 +50,7 @@
 		"@libsql/kysely-libsql": "^0.4.1",
 		"@sentry/sveltekit": "^8",
 		"@tailwindcss/vite": "^4.0.0",
+		"@vercel/speed-insights": "^1.2.0",
 		"ai": "^4.1.10",
 		"better-auth": "^1.1.14",
 		"effect": "^3.12.7",
