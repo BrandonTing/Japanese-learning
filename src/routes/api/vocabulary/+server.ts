@@ -3,8 +3,8 @@ import { formatDataStreamPart, streamText, type Message } from 'ai';
 import type { RequestHandler } from './$types';
 
 import { env } from '$env/dynamic/private';
-import { promptCache } from './tool';
-
+import { PromptCache } from '@/promptCache';
+const promptCache = new PromptCache<string>()
 const openai = createOpenAI({
   apiKey: env.OPENAI_API_KEY ?? '',
 });
@@ -15,6 +15,7 @@ export const POST = (async ({ request }) => {
   if (userMessage) {
     const cacheHit = promptCache.get(userMessage.content);
     if (cacheHit) {
+      console.log(`vocabulary cache hit, prompt: ${userMessage.content}`)
       return new Response(formatDataStreamPart('text', cacheHit), {
         status: 200,
         headers: { 'Content-Type': 'text/plain' },

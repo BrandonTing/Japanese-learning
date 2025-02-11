@@ -3,13 +3,28 @@ import { streamText } from 'ai';
 import type { RequestHandler } from './$types';
 
 import { env } from '$env/dynamic/private';
+import { PromptCache } from '@/promptCache';
+import type { Message } from 'ai';
+import { formatDataStreamPart } from 'ai';
 
 const openai = createOpenAI({
   apiKey: env.OPENAI_API_KEY ?? '',
 });
+const promptCache = new PromptCache<string>()
 
 export const POST = (async ({ request }) => {
   const { messages } = await request.json();
+  const userMessage = (messages as Array<Message>).find(message => message.role === "user");
+  if (userMessage) {
+    const cacheHit = promptCache.get(userMessage.content);
+    if (cacheHit) {
+      console.log(`translate cache hit, prompt: ${userMessage.content}`)
+      return new Response(formatDataStreamPart('text', cacheHit), {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
+  }
 
   const result = streamText({
     model: openai('gpt-4o-mini'),
@@ -20,6 +35,11 @@ export const POST = (async ({ request }) => {
       需求包含檢查文章文法是否正確或請解釋文章中使用到哪些文法等。
     `,
     messages,
+    onFinish({ text }) {
+      if (text && userMessage) {
+        promptCache.set(userMessage.content, text);
+      }
+    },
   });
 
   return result.toDataStreamResponse();
