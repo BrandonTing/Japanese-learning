@@ -64,6 +64,7 @@
 						<span class="inline-block p-2 text-black"> loading... </span>
 					</div>
 				{/if}
+				<!-- TODO auto scroll bottom -->
 			</ScrollArea>
 			<div class="flex flex-col space-y-2">
 				<p class="text-sm text-muted-foreground hidden md:block">
