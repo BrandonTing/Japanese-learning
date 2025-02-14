@@ -67,14 +67,14 @@
 			<Sheet.Title>Ask AI</Sheet.Title>
 		</Sheet.Header>
 		<div class="p-4 flex flex-col h-[80dvh]">
-			<ScrollArea class="flex-grow mb-4">
+			<ScrollArea class="flex-grow mb-4" contentClasses="!block max-w-full">
 				{#each $messages as message}
 					<div
 						class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
 						id={message.id}
 					>
 						<span
-							class={`inline-block p-2 rounded-lg ${
+							class={`inline-block p-2 rounded-lg max-w-[90%]  ${
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
 							}`}
 						>
