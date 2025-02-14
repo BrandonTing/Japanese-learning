@@ -101,35 +101,27 @@
 					id="chat-bot"
 				>
 					<div class="flex gap-1 flex-col md:flex-row md:gap-2 md:items-end">
-						{#if $isLoading}
-							<Button
-								class="flex-1"
-								variant="outline"
-								on:click={() => {
-									stop();
-								}}
-							>
-								<span>Cancel Generation</span>
-							</Button>
-						{:else}
-							<div class="relative flex-1">
-								<Textarea
-									bind:value={$input}
-									placeholder="Type your message..."
-									on:keydown={(e) => {
-										if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
-											return;
-										}
-										e.stopPropagation();
-										handleSubmit();
+						<div class="flex-1 relative">
+							<Textarea
+								bind:value={$input}
+								placeholder="Type your message..."
+								on:keydown={(e) => {
+									if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
 										return;
-									}}
-								/>
-								{#if $input}
-									<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
-								{/if}
-							</div>
-						{/if}
+									}
+									if (window.innerWidth < 768) {
+										return;
+									}
+									e.stopPropagation();
+									handleSubmit();
+									return;
+								}}
+							/>
+							{#if $input}
+								<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
+							{/if}
+						</div>
+
 						<div class="flex gap-1 justify-end">
 							<Button
 								variant="outline"
@@ -137,8 +129,17 @@
 								disabled={!$input.trim()}
 								onclick={() => ($input = '')}>Clear</Button
 							>
-
-							<Button type="submit">Send</Button>
+							{#if $isLoading}
+								<Button
+									on:click={() => {
+										stop();
+									}}
+								>
+									<span>Cancel</span>
+								</Button>
+							{:else}
+								<Button type="submit">Send</Button>
+							{/if}
 
 							<Button
 								variant="outline"
