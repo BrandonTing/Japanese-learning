@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import ClearInput from '@/components/clearInput.svelte';
 	import { Button, buttonVariants } from '@/components/ui/button';
@@ -7,13 +9,28 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare } from 'lucide-svelte';
 	import { marked } from 'marked';
-	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
+	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
+		onResponse: () => {
+			const lastMessage = $messages.findLast((message) => message.role === 'user');
+			// find element by id
+			if (lastMessage) {
+				const lastMessageElement = document.getElementById(lastMessage.id);
+				// if element exist, scroll to top
+				lastMessageElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+	});
 	let abortController = new AbortController();
+	let openChat = $page.url.searchParams.get('chat') === 'true';
 </script>
 
 <Sheet.Root
+	open={openChat}
 	onOpenChange={(open) => {
 		if (open) {
+			const params = new URLSearchParams($page.url.search);
+			params.set('chat', 'true');
+			goto(`?${params.toString()}`);
 			if (abortController.signal.aborted) {
 				abortController = new AbortController();
 			}
@@ -29,6 +46,9 @@
 				}
 			);
 		} else {
+			const params = new URLSearchParams($page.url.search);
+			params.delete('chat');
+			goto(`?${params.toString()}`);
 			abortController.abort();
 		}
 	}}
@@ -49,7 +69,10 @@
 		<div class="p-4 flex flex-col h-[80dvh]">
 			<ScrollArea class="flex-grow mb-4">
 				{#each $messages as message}
-					<div class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+					<div
+						class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
+						id={message.id}
+					>
 						<span
 							class={`inline-block p-2 rounded-lg ${
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
@@ -63,6 +86,7 @@
 					<div class="mb-4 text-left">
 						<span class="inline-block p-2 text-black"> loading... </span>
 					</div>
+					<div class="h-[80vh]"></div>
 				{/if}
 				<!-- TODO auto scroll bottom -->
 			</ScrollArea>
@@ -70,7 +94,12 @@
 				<p class="text-sm text-muted-foreground hidden md:block">
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
-				<form on:submit={handleSubmit} id="chat-bot">
+				<form
+					on:submit={(e) => {
+						handleSubmit(e);
+					}}
+					id="chat-bot"
+				>
 					<div class="flex gap-1 flex-col md:flex-row md:gap-2 md:items-end">
 						{#if $isLoading}
 							<Button

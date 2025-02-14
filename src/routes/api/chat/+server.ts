@@ -16,7 +16,39 @@ export const POST = (async ({ request }) => {
   const { messages } = await request.json();
   const userMessage = (messages as Array<Message>).findLast(message => message.role === "user");
   if (userMessage) {
-    const cacheHit = promptCache.get(userMessage.content);
+    // const cacheHit = promptCache.get(userMessage.content);
+    const cacheHit = `
+    This is a mock response for testing cache hit. 
+    The purpose of this mock response is to simulate a scenario where the cache contains a precomputed response for the given user input. 
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    This helps in testing the cache hit functionality without actually querying the OpenAI API or relying on the promptCache implementation.
+    `;
+
     if (cacheHit) {
       console.log(`chat cache hit, prompt: ${userMessage.content}`)
       return new Response(formatDataStreamPart('text', cacheHit), {
