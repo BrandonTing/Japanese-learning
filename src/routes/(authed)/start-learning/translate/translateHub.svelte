@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Tabs from '$lib/components/ui/tabs';
-	import Find from './basic.svelte';
+	import Basic from './basic.svelte';
 	import Check from './check.svelte';
 	import Compare from './compare.svelte';
 	import Pattern from './pattern.svelte';
@@ -13,8 +13,8 @@
 			<Tabs.Trigger value={tab}>{tab}</Tabs.Trigger>
 		{/each}
 	</Tabs.List>
-	<Tabs.Content value="Basic"><Check /></Tabs.Content>
-	<Tabs.Content value="Check"><Find /></Tabs.Content>
+	<Tabs.Content value="Basic"><Basic /></Tabs.Content>
+	<Tabs.Content value="Check"><Check /></Tabs.Content>
 	<Tabs.Content value="Compare"><Compare /></Tabs.Content>
 	<Tabs.Content value="Pattern"><Pattern /></Tabs.Content>
 </Tabs.Root>
