@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import ClearInput from '@/components/clearInput.svelte';
 	import { Button, buttonVariants } from '@/components/ui/button';
@@ -7,13 +9,28 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare } from 'lucide-svelte';
 	import { marked } from 'marked';
-	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat();
+	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
+		onResponse: () => {
+			const lastMessage = $messages.findLast((message) => message.role === 'user');
+			// find element by id
+			if (lastMessage) {
+				const lastMessageElement = document.getElementById(lastMessage.id);
+				// if element exist, scroll to top
+				lastMessageElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+	});
 	let abortController = new AbortController();
+	let openChat = $page.url.searchParams.get('chat') === 'true';
 </script>
 
 <Sheet.Root
+	open={openChat}
 	onOpenChange={(open) => {
 		if (open) {
+			const params = new URLSearchParams($page.url.search);
+			params.set('chat', 'true');
+			goto(`?${params.toString()}`);
 			if (abortController.signal.aborted) {
 				abortController = new AbortController();
 			}
@@ -29,6 +46,9 @@
 				}
 			);
 		} else {
+			const params = new URLSearchParams($page.url.search);
+			params.delete('chat');
+			goto(`?${params.toString()}`);
 			abortController.abort();
 		}
 	}}
@@ -47,11 +67,14 @@
 			<Sheet.Title>Ask AI</Sheet.Title>
 		</Sheet.Header>
 		<div class="p-4 flex flex-col h-[80dvh]">
-			<ScrollArea class="flex-grow mb-4">
+			<ScrollArea class="flex-grow mb-4" contentClasses="!block max-w-full">
 				{#each $messages as message}
-					<div class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+					<div
+						class={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
+						id={message.id}
+					>
 						<span
-							class={`inline-block p-2 rounded-lg ${
+							class={`inline-block p-2 rounded-lg max-w-[90%]  ${
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
 							}`}
 						>
@@ -63,43 +86,42 @@
 					<div class="mb-4 text-left">
 						<span class="inline-block p-2 text-black"> loading... </span>
 					</div>
+					<div class="h-[80vh]"></div>
 				{/if}
+				<!-- TODO auto scroll bottom -->
 			</ScrollArea>
 			<div class="flex flex-col space-y-2">
 				<p class="text-sm text-muted-foreground hidden md:block">
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
-				<form on:submit={handleSubmit} id="chat-bot">
+				<form
+					on:submit={(e) => {
+						handleSubmit(e);
+					}}
+					id="chat-bot"
+				>
 					<div class="flex gap-1 flex-col md:flex-row md:gap-2 md:items-end">
-						{#if $isLoading}
-							<Button
-								class="flex-1"
-								variant="outline"
-								on:click={() => {
-									stop();
-								}}
-							>
-								<span>Cancel Generation</span>
-							</Button>
-						{:else}
-							<div class="relative flex-1">
-								<Textarea
-									bind:value={$input}
-									placeholder="Type your message..."
-									on:keydown={(e) => {
-										if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
-											return;
-										}
-										e.stopPropagation();
-										handleSubmit();
+						<div class="flex-1 relative">
+							<Textarea
+								bind:value={$input}
+								placeholder="Type your message..."
+								on:keydown={(e) => {
+									if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
 										return;
-									}}
-								/>
-								{#if $input}
-									<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
-								{/if}
-							</div>
-						{/if}
+									}
+									if (window.innerWidth < 768) {
+										return;
+									}
+									e.stopPropagation();
+									handleSubmit();
+									return;
+								}}
+							/>
+							{#if $input}
+								<ClearInput clear={() => ($input = '')} className="top-full -translate-y-6" />
+							{/if}
+						</div>
+
 						<div class="flex gap-1 justify-end">
 							<Button
 								variant="outline"
@@ -107,8 +129,17 @@
 								disabled={!$input.trim()}
 								onclick={() => ($input = '')}>Clear</Button
 							>
-
-							<Button type="submit">Send</Button>
+							{#if $isLoading}
+								<Button
+									on:click={() => {
+										stop();
+									}}
+								>
+									<span>Cancel</span>
+								</Button>
+							{:else}
+								<Button type="submit">Send</Button>
+							{/if}
 
 							<Button
 								variant="outline"

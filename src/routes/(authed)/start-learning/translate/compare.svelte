@@ -7,6 +7,7 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { marked } from 'marked';
+	let targetMeaning = '';
 	let text = '';
 	const accordionTypes = {
 		CORRECTNESS: 'Check_Correctness',
@@ -14,10 +15,6 @@
 		NONE: ''
 	} as const;
 	let accordionValue: (typeof accordionTypes)[keyof typeof accordionTypes] = '';
-	let history = {
-		CORRECTNESS: '',
-		EXPLAIN: ''
-	} satisfies Omit<Record<keyof typeof accordionTypes, string>, 'NONE'>;
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
 		api: '/api/translation'
 	});
@@ -28,7 +25,17 @@
 		Paste a Japanese article for translation and grammar explanation.
 	</p>
 	<div class="relative">
-		<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
+		<Textarea
+			placeholder="Paste your target sentence here..."
+			bind:value={targetMeaning}
+			rows={5}
+		/>
+		{#if text}
+			<ClearInput clear={() => (targetMeaning = '')} className="top-full -translate-y-6" />
+		{/if}
+	</div>
+	<div class="relative">
+		<Textarea placeholder="Paste your Japanese sentence here..." bind:value={text} rows={5} />
 		{#if text}
 			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
 		{/if}
@@ -38,43 +45,14 @@
 			variant="outline"
 			class="block md:hidden"
 			disabled={!text.trim()}
-			onclick={() => (text = '')}>Clear</Button
-		>
-		<Button
 			onclick={() => {
-				accordionValue = accordionTypes.CORRECTNESS;
-				if (history.CORRECTNESS === text) {
-					return;
-				}
-				history.CORRECTNESS = text;
-				history.EXPLAIN = '';
-				Sentry.startSpan(
-					{
-						name: 'Translate and Check Grammer',
-						op: 'Translate'
-					},
-					() => {
-						setMessages([]);
-						append({
-							role: 'user',
-							content: `
-                    請協助我翻譯以下句子，並判斷其中文法是否正確：
-                    ${text}
-                  `
-						});
-					}
-				);
-			}}
-			disabled={!text.trim() || accordionValue === accordionTypes.CORRECTNESS}>Check</Button
+				text = '';
+				targetMeaning = '';
+			}}>Clear</Button
 		>
 		<Button
 			onclick={() => {
 				accordionValue = accordionTypes.EXPLAIN;
-				if (history.EXPLAIN === text) {
-					return;
-				}
-				history.EXPLAIN = text;
-				history.CORRECTNESS = '';
 				Sentry.startSpan(
 					{
 						name: 'Translate and Explain Grammer',
@@ -85,14 +63,16 @@
 						append({
 							role: 'user',
 							content: `
-                  請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
+                  以下我會附上兩個句子，第一個句子是我期望的意思，第二個句子是我目前的日文造句，
+                  請協助我確認第二個句子是否符合第一個句子的意思，若不符合，請解釋原因：
+                  ${targetMeaning}
                   ${text}
                 `
 						});
 					}
 				);
 			}}
-			disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}>Explain</Button
+			disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}>Submit</Button
 		>
 		{#if accordionValue !== accordionTypes.NONE}
 			<Button

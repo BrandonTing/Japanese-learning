@@ -14,7 +14,7 @@ export class JSONParseError extends Data.TaggedError("JSONParseError")<{
   parseErrorMessage: string
 }> { }
 
-export class ZodParseError extends Data.TaggedError("ZodParseError")<{
+export class ParseError extends Data.TaggedError("ParseError")<{
   parseErrorMessage: string
 }> { }
 

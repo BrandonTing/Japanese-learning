@@ -1,15 +1,27 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { formatDataStreamPart, streamText, type Message } from 'ai';
 import type { RequestHandler } from './$types';
 
 import { env } from '$env/dynamic/private';
-
+import { PromptCache } from '@/promptCache';
+const promptCache = new PromptCache<string>()
 const openai = createOpenAI({
   apiKey: env.OPENAI_API_KEY ?? '',
 });
 
 export const POST = (async ({ request }) => {
   const { messages } = await request.json();
+  const userMessage = (messages as Array<Message>).find(message => message.role === "user");
+  if (userMessage) {
+    const cacheHit = promptCache.get(userMessage.content);
+    if (cacheHit) {
+      console.log(`vocabulary cache hit, prompt: ${userMessage.content}`)
+      return new Response(formatDataStreamPart('text', cacheHit), {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
+  }
 
   const result = streamText({
     model: openai('gpt-4o-mini'),
@@ -21,6 +33,11 @@ export const POST = (async ({ request }) => {
       你會提供我該單字的辭書型、詞性、羅馬拼音、重音標示、含義、動詞變化與例句，變化方式請以table格式呈現
     `,
     messages,
+    onFinish({ text }) {
+      if (text && userMessage) {
+        promptCache.set(userMessage.content, text);
+      }
+    },
   });
 
   return result.toDataStreamResponse();

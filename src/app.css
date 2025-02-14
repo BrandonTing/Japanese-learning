@@ -365,3 +365,7 @@
     cursor: var(--cursor-not-allowed-image-1), auto;
   }
 }
+
+code {
+  white-space: pre-wrap;
+}

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { Toaster } from '$lib/components/ui/sonner';
 	import '$lib/states/userSetting.svelte';
+	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 	import '../app.css';
+
+	injectSpeedInsights();
+
 	let { children } = $props();
 </script>
 

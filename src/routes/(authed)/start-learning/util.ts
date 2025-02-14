@@ -1,5 +1,5 @@
-import { JSONParseError, ZodParseError } from "@/error";
-import { errorSchema } from "@/schema";
+import { JSONParseError, ParseError } from "@/error";
+import { parseError } from "@/schema";
 import { Effect } from "effect";
 
 export function handleGenerateError(e: Error) {
@@ -12,20 +12,22 @@ export function handleGenerateError(e: Error) {
           parseErrorMessage: e.message
         })
     });
-    const { success, data, error: zodError } = errorSchema.safeParse(errorResponse);
+    const res = parseError(errorResponse);
+    const { success, output, issues } = res;
     if (!success) {
-      yield* new ZodParseError({
+      yield* new ParseError({
         parseErrorMessage:
-          zodError.flatten().fieldErrors.message?.join(',') || 'Something went wrong'
+          issues.map(issue => typeof issue === "string" ? issue : issue.message).join(',') || 'Something went wrong'
       });
+      return
     }
-    return data?.message ?? 'Something went wrong';
+    return output.message ?? 'Something went wrong';
   }).pipe(
     Effect.catchTags({
       JSONParseError: (e) => {
         return Effect.succeed(e.parseErrorMessage);
       },
-      ZodParseError: (e) => {
+      ParseError: (e) => {
         return Effect.succeed(e.parseErrorMessage);
       }
     }),
