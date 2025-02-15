@@ -3,11 +3,18 @@
 	import Basic from './basic.svelte';
 	import Check from './check.svelte';
 	import Compare from './compare.svelte';
+	import { hubState, tabs } from './hubState.svelte';
 	import Pattern from './pattern.svelte';
-	const tabs = ['Basic', 'Check', 'Compare', 'Pattern'];
 </script>
 
-<Tabs.Root>
+<Tabs.Root
+	value={hubState.tab}
+	onValueChange={(value) => {
+		if (value) {
+			hubState.setTab(value);
+		}
+	}}
+>
 	<Tabs.List>
 		{#each tabs as tab}
 			<Tabs.Trigger value={tab}>{tab}</Tabs.Trigger>

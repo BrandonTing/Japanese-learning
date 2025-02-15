@@ -4,12 +4,20 @@ import type { RequestHandler } from './$types';
 
 import { env } from '$env/dynamic/private';
 import { PromptCache } from '@/promptCache';
+import { getMockedAiResponse, isUsingMockedAiResponse, sleepMs } from '@/utils';
 const promptCache = new PromptCache<string>()
 const openai = createOpenAI({
   apiKey: env.OPENAI_API_KEY ?? '',
 });
 
 export const POST = (async ({ request }) => {
+  if (isUsingMockedAiResponse()) {
+    await sleepMs(1000);
+    return new Response(formatDataStreamPart('text', getMockedAiResponse()), {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  }
   const { messages } = await request.json();
   const userMessage = (messages as Array<Message>).find(message => message.role === "user");
   if (userMessage) {
