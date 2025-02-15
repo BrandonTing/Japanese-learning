@@ -1,10 +1,10 @@
 export const userInfoNavItems = [
+  // {
+  //   title: 'History',
+  //   href: '/history'
+  // },
   {
     title: 'Setting',
     href: '/user-setting'
   },
-  // {
-  //   title: 'Setting2',
-  //   href: '/test'
-  // }
 ] as const;
