@@ -25,7 +25,6 @@
 	<p class="text-sm text-muted-foreground">
 		Paste a Japanese article for translation and grammar explanation.
 	</p>
-	<Input type="text" placeholder="Pattern" bind:value={pattern} />
 
 	<div class="relative">
 		<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
@@ -33,6 +32,8 @@
 			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
 		{/if}
 	</div>
+	<Input type="text" placeholder="Pattern" bind:value={pattern} />
+
 	<div class="flex justify-end gap-2">
 		<Button
 			variant="outline"
