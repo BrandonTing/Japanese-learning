@@ -18,6 +18,10 @@
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
 		api: '/api/translation'
 	});
+	let canSubmit = false;
+	function checkCanSubmit() {
+		return Boolean(targetMeaning.trim() && text.trim());
+	}
 </script>
 
 <div class="flex gap-4 flex-col px-1">
@@ -28,16 +32,38 @@
 		<Textarea
 			placeholder="Paste your target sentence here..."
 			bind:value={targetMeaning}
-			rows={5}
+			rows={2}
+			on:change={() => {
+				canSubmit = checkCanSubmit();
+			}}
 		/>
-		{#if text}
-			<ClearInput clear={() => (targetMeaning = '')} className="top-full -translate-y-6" />
+		{#if targetMeaning}
+			<ClearInput
+				clear={() => {
+					targetMeaning = '';
+					canSubmit = false;
+				}}
+				className="top-full -translate-y-6"
+			/>
 		{/if}
 	</div>
 	<div class="relative">
-		<Textarea placeholder="Paste your Japanese sentence here..." bind:value={text} rows={5} />
+		<Textarea
+			placeholder="Paste your Japanese sentence here..."
+			bind:value={text}
+			rows={2}
+			on:change={() => {
+				canSubmit = checkCanSubmit();
+			}}
+		/>
 		{#if text}
-			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
+			<ClearInput
+				clear={() => {
+					text = '';
+					canSubmit = false;
+				}}
+				className="top-full -translate-y-6"
+			/>
 		{/if}
 	</div>
 	<div class="flex justify-end gap-2">
@@ -72,7 +98,7 @@
 					}
 				);
 			}}
-			disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}>Submit</Button
+			disabled={!canSubmit}>Submit</Button
 		>
 		{#if accordionValue !== accordionTypes.NONE}
 			<Button
