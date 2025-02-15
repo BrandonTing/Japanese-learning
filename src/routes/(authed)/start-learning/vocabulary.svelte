@@ -6,6 +6,7 @@
 	import Input from '@/components/ui/input/input.svelte';
 	import { vocabularyMap } from '@/states/vocabularySearchStore';
 	import { useChat } from '@ai-sdk/svelte';
+	import { Bookmark } from 'lucide-svelte';
 	import { marked } from 'marked';
 	const VOCABULARY_ACCORDION_VALUE = 'VOCABULARY_ACCORDION_VALUE';
 	let text = '';
@@ -44,6 +45,11 @@
 			>
 			<Button
 				onclick={() => {
+					if (accordionValue !== '') {
+						stop();
+						accordionValue = '';
+						return;
+					}
 					accordionValue = VOCABULARY_ACCORDION_VALUE;
 					if ($vocabularyMap[text]) {
 						content = $vocabularyMap[text];
@@ -58,15 +64,15 @@
 				}}
 				disabled={!text.trim()}
 			>
-				Explain
+				{#if accordionValue !== ''}
+					Stop
+				{:else}
+					Explain
+				{/if}
 			</Button>
-			{#if accordionValue !== ''}
-				<Button
-					onclick={() => {
-						stop();
-					}}>Stop</Button
-				>
-			{/if}
+			<Button variant="outline" size="icon" disabled={accordionValue === ''}>
+				<Bookmark class="h-4 w-4" />
+			</Button>
 		</div>
 	</div>
 	<Accordion.Root bind:value={accordionValue}>
