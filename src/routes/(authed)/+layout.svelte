@@ -7,7 +7,8 @@
 	let { children } = $props();
 	const session = authClient.useSession();
 	$effect(() => {
-		if (!$session.data?.session) {
+		if (!$session.data) return;
+		if (!$session.data.session) {
 			toast.warning('Your login session has expired, redirecting to Login page', {
 				duration: 500
 			});
