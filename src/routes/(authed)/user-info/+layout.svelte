@@ -8,7 +8,7 @@
 	<aside class="-mx-4 md:w-1/5">
 		<Sidebar />
 	</aside>
-	<div class="flex-1 md:max-w-2xl">
+	<div class="flex-1">
 		{@render children()}
 	</div>
 </div>
