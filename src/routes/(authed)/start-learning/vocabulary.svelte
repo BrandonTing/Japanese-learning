@@ -4,19 +4,14 @@
 	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import Input from '@/components/ui/input/input.svelte';
-	import { vocabularyMap } from '@/states/vocabularySearchStore';
 	import { useChat } from '@ai-sdk/svelte';
 	import { Bookmark } from 'lucide-svelte';
 	import { marked } from 'marked';
 	const VOCABULARY_ACCORDION_VALUE = 'VOCABULARY_ACCORDION_VALUE';
 	let text = '';
 	let accordionValue = '';
-	let content = '';
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
-		api: '/api/vocabulary',
-		onFinish(message) {
-			$vocabularyMap[text] = message.content;
-		}
+		api: '/api/vocabulary'
 	});
 </script>
 
@@ -45,17 +40,12 @@
 			>
 			<Button
 				onclick={() => {
-					if (accordionValue !== '') {
+					if ($isLoading) {
 						stop();
 						accordionValue = '';
 						return;
 					}
 					accordionValue = VOCABULARY_ACCORDION_VALUE;
-					if ($vocabularyMap[text]) {
-						content = $vocabularyMap[text];
-						return;
-					}
-					content = '';
 					setMessages([]);
 					append({
 						role: 'user',
@@ -64,7 +54,7 @@
 				}}
 				disabled={!text.trim()}
 			>
-				{#if accordionValue !== ''}
+				{#if $isLoading}
 					Stop
 				{:else}
 					Explain
@@ -78,15 +68,11 @@
 	<Accordion.Root bind:value={accordionValue}>
 		<Accordion.Item value={VOCABULARY_ACCORDION_VALUE} class="border-0">
 			<Accordion.Content class="text-base">
-				{#if content}
-					{@html marked(content)}
-				{:else}
-					{#each $messages as message}
-						{#if message.role === 'assistant'}
-							{@html marked(message.content)}
-						{/if}
-					{/each}
-				{/if}
+				{#each $messages as message}
+					{#if message.role === 'assistant'}
+						{@html marked(message.content)}
+					{/if}
+				{/each}
 			</Accordion.Content>
 		</Accordion.Item>
 	</Accordion.Root>

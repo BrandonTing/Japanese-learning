@@ -7,3 +7,7 @@ export const envSchema = v.object({
   OPENAI_API_KEY: v.string(),
   VITE_MOCK_AI_RESPONSE: v.pipe(v.optional(v.string()), v.transform(input => input === "true")),
 })
+
+export function validateEnv(env: unknown) {
+  return v.parse(envSchema, env)
+}
