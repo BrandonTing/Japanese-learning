@@ -16,7 +16,7 @@
 	} as const;
 	let accordionValue: (typeof accordionTypes)[keyof typeof accordionTypes] = '';
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
-		api: '/api/translation'
+		api: '/api/ai/translation'
 	});
 	let canSubmit = false;
 	function checkCanSubmit() {

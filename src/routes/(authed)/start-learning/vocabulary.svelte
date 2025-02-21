@@ -11,7 +11,7 @@
 	let text = '';
 	let accordionValue = '';
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
-		api: '/api/vocabulary'
+		api: '/api/ai/vocabulary'
 	});
 </script>
 
