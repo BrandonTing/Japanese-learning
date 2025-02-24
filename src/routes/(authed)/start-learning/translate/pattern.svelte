@@ -6,7 +6,6 @@
 	import { Textarea } from '@/components/ui/textarea';
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
-	import { Bookmark } from 'lucide-svelte';
 	let pattern = '';
 	let text = '';
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
@@ -67,9 +66,9 @@
 				disabled={!canSubmit}>Submit</Button
 			>
 		{/if}
-		<Button variant="outline" size="icon" disabled={!canBookmark}>
+		<!-- <Button variant="outline" size="icon" disabled={!canBookmark}>
 			<Bookmark class="h-4 w-4" />
-		</Button>
+		</Button> -->
 	</div>
 	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
 </div>
