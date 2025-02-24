@@ -1,7 +1,7 @@
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
 
-type Item = {
+export type Item = {
   key: string,
   content: string
 }
