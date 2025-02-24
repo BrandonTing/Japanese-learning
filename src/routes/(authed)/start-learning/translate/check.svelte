@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ClearInput from '@/components/clearInput.svelte';
+	import ContentBlock from '@/components/contentBlock.svelte';
 	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea';
@@ -68,14 +69,5 @@
 			<Bookmark class="h-4 w-4" />
 		</Button>
 	</div>
-	{#each $messages as message}
-		{#if message.role === 'assistant'}
-			{@html marked(message.content)}
-		{/if}
-	{/each}
-	{#if $isLoading}
-		Loading...
-	{:else if $error}
-		<ErrorMessage message={$error.message} />
-	{/if}
+	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
 </div>

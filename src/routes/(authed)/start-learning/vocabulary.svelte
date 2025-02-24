@@ -1,12 +1,11 @@
 <script lang="ts">
 	import ClearInput from '@/components/clearInput.svelte';
-	import ErrorMessage from '@/components/errorMessage.svelte';
+	import ContentBlock from '@/components/contentBlock.svelte';
 	import { Button } from '@/components/ui/button';
 	import Input from '@/components/ui/input/input.svelte';
 	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import { Bookmark } from 'lucide-svelte';
-	import { marked } from 'marked';
 	let text = '';
 	let canBookmark = false;
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
@@ -74,14 +73,5 @@
 			</Button>
 		</div>
 	</div>
-	{#each $messages as message}
-		{#if message.role === 'assistant'}
-			{@html marked(message.content)}
-		{/if}
-	{/each}
-	{#if $isLoading}
-		Loading...
-	{:else if $error}
-		<ErrorMessage message={$error.message} />
-	{/if}
+	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
 </div>
