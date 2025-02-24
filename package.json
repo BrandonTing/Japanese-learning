@@ -55,6 +55,7 @@
     "better-auth": "^1.1.14",
     "effect": "^3.12.7",
     "marked": "^15.0.6",
+    "replicache": "^15.0.1",
     "temporal-polyfill": "^0.2.5",
     "valibot": "^1.0.0-rc.0",
     "zod": "^3.24.1"

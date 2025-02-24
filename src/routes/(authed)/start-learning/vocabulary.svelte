@@ -3,6 +3,7 @@
 	import ErrorMessage from '@/components/errorMessage.svelte';
 	import { Button } from '@/components/ui/button';
 	import Input from '@/components/ui/input/input.svelte';
+	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import { Bookmark } from 'lucide-svelte';
 	import { marked } from 'marked';
@@ -54,7 +55,21 @@
 					Explain
 				</Button>
 			{/if}
-			<Button variant="outline" size="icon" disabled={!canBookmark}>
+			<Button
+				variant="outline"
+				size="icon"
+				disabled={!canBookmark}
+				on:click={() => {
+					const content = $messages.findLast((message) => message.role === 'assistant')?.content;
+					if (!content) {
+						return;
+					}
+					db.saveVocabulary({
+						key: text,
+						content
+					});
+				}}
+			>
 				<Bookmark class="h-4 w-4" />
 			</Button>
 		</div>
