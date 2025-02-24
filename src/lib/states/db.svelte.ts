@@ -8,6 +8,7 @@ type Item = {
 
 type ReplicacheSpec = {
   saveVocabulary: (tx: WriteTransaction, args: Item) => Promise<void>
+  deleteVocabulary: (tx: WriteTransaction, args: Item["key"]) => Promise<void>
 }
 
 class DB {
@@ -27,6 +28,9 @@ class DB {
             content
           });
         },
+        deleteVocabulary: async (tx, key) => {
+          await tx.del(`Vocabulary/${key}`);
+        }
       },
     });
     import.meta.hot?.dispose(() => rep.close());
@@ -46,6 +50,9 @@ class DB {
     }).catch(() => {
       toast.error(`Failed to save explanation of ${item.key}`)
     })
+  }
+  deleteVocabulary(key: string) {
+    this.rep?.mutate.deleteVocabulary(key)
   }
 }
 
