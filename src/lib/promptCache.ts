@@ -10,7 +10,7 @@ export class PromptCache<T> {
   private maxSize: number;
   private defaultExpiry: number;
 
-  constructor(maxSize: number = 5, defaultExpiry: number = 3600000) { // default expiry is 1 hour
+  constructor(maxSize: number = 30, defaultExpiry: number = 3600000) { // default expiry is 1 hour
     this.cache = new Map();
     this.maxSize = maxSize;
     this.defaultExpiry = defaultExpiry;

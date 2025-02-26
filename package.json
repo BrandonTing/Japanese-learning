@@ -57,6 +57,7 @@
     "marked": "^15.0.6",
     "replicache": "^15.0.1",
     "temporal-polyfill": "^0.2.5",
+    "uuid": "^11.1.0",
     "valibot": "^1.0.0-rc.0",
     "zod": "^3.24.1"
   }

@@ -22,3 +22,5 @@ export type ErrorResposne = {
   success: false,
   message: string
 }
+
+export class DuplicatedError extends Data.TaggedError("DuplicatedError")<{}> { }

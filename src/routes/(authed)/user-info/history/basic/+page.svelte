@@ -8,7 +8,7 @@
 		if (!db.rep) {
 			return;
 		}
-		const unsubscribe = db.subscribeVocabularies();
+		const unsubscribe = db.subscribeBasic();
 		return () => {
 			unsubscribe?.();
 		};
@@ -19,18 +19,18 @@
 	{#if !db.rep}
 		Loading...
 	{/if}
-	{#if db.vocabularies.length === 0}
-		<p>No vocabulary history yet.</p>
+	{#if db.basicTranslations.length === 0}
+		<p>No Basic Translation history yet.</p>
 	{:else}
-		{#each db.vocabularies as { id, vocabulary, explanation } (id)}
-			<div animate:flip={{ duration: 300 }}>
-				<Card>
+		{#each db.basicTranslations as { id, sentence, explanation } (id)}
+			<div animate:flip={{ duration: 300 }} class="max-w-lg">
+				<Card class="h-full flex flex-col justify-between">
 					<CardHeader>
 						<CardTitle>
-							{vocabulary}
+							{sentence}
 						</CardTitle>
 					</CardHeader>
-					<CardFooter {explanation} onDelete={() => db.deleteVocabulary(id)} />
+					<CardFooter {explanation} onDelete={() => db.deleteBasic(id)} />
 				</Card>
 			</div>
 		{/each}

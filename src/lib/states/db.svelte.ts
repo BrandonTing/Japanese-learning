@@ -1,49 +1,91 @@
+import { DuplicatedError } from "@/error";
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
-
+import { v4 as uuidv4 } from "uuid";
 export type Vocabulary = {
   vocabulary: string,
   explanation: string
 }
 
-const prefixes = {
-  vocabulary: "Vocabulary/"
+export type Translation = {
+  sentence: string,
+  explanation: string
 }
 
-type ReplicacheSpec = {
-  saveVocabulary: (tx: WriteTransaction, args: Vocabulary) => Promise<void>
-  deleteVocabulary: (tx: WriteTransaction, args: Vocabulary["vocabulary"]) => Promise<void>
-}
+type WithID<T extends Record<string, string>> = T & { id: string }
+
+const prefixes = {
+  vocabulary: "Vocabulary/",
+  basic: "Basic/",
+  // check: "Check/",
+  // compare: "Compare/",
+  // pattern: "Pattern/"
+} as const
+
+const mutators = {
+  saveVocabulary: async (tx, {
+    vocabulary,
+    explanation
+  }: Vocabulary) => {
+    const existed = (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray() as Array<WithID<Vocabulary>>).find(v => v.vocabulary === vocabulary);
+    if (existed) {
+      throw new DuplicatedError()
+    }
+    const uuid = uuidv4();
+    await tx.set(`${prefixes.vocabulary}${uuid}`, {
+      id: uuid,
+      vocabulary,
+      explanation
+    });
+  },
+  deleteVocabulary: async (tx, key: string) => {
+    await tx.del(`${prefixes.vocabulary}${key}`);
+  },
+  saveBasic: async (tx, {
+    sentence,
+    explanation
+  }: Translation) => {
+    const existed = (await tx.scan({ prefix: prefixes.basic }).values().toArray() as Array<WithID<Translation>>).find(v => v.sentence === sentence);
+    if (existed) {
+      throw new DuplicatedError()
+    }
+    const uuid = uuidv4();
+    console.log(uuid)
+    await tx.set(`${prefixes.basic}${uuid}`, {
+      id: uuid,
+      sentence,
+      explanation
+    });
+  },
+  deleteBasic: async (tx, key: string) => {
+    await tx.del(`${prefixes.basic}${key}`);
+  }
+} satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
+
+type ReplicacheSpec = typeof mutators
 
 class DB {
   rep = $state<Replicache<ReplicacheSpec>>();
-  vocabularies = $state<Array<Vocabulary>>([]);
+  vocabularies = $state<Array<WithID<Vocabulary>>>([]);
+  basicTranslations = $state<Array<WithID<Translation>>>([]);
   init(userId: string) {
     const rep = new Replicache<ReplicacheSpec>({
       name: userId,
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
-      mutators: {
-        saveVocabulary: async (tx, {
-          vocabulary,
-          explanation
-        }) => {
-          await tx.set(`${prefixes.vocabulary}${vocabulary}`, {
-            vocabulary,
-            explanation
-          });
-        },
-        deleteVocabulary: async (tx, key) => {
-          await tx.del(`${prefixes.vocabulary}${key}`);
-        }
-      },
+      mutators,
     });
     import.meta.hot?.dispose(() => rep.close());
     this.rep = rep;
   }
+  // Vocabulary
   saveVocabulary(vocabulary: Vocabulary) {
     this.rep?.mutate.saveVocabulary(vocabulary).then(() => {
       toast.success(`Explanation of ${vocabulary.vocabulary} is saved`)
-    }).catch(() => {
+    }).catch((e) => {
+      if (e instanceof DuplicatedError) {
+        toast.error(`Explanation of ${vocabulary.vocabulary} is already existed`)
+        return
+      }
       toast.error(`Failed to save explanation of ${vocabulary.vocabulary}`)
     })
   }
@@ -52,13 +94,43 @@ class DB {
   }
   subscribeVocabularies() {
     return this.rep?.subscribe(
-      async tx => (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray()) as Array<(Vocabulary)>,
+      async tx => (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray()) as Array<WithID<Vocabulary>>,
       {
         onData: (data) => {
           this.vocabularies = data;
         }
       }
     )
+  }
+  // Basic
+  saveBasic(translation: Translation) {
+    this.rep?.mutate.saveBasic(translation).then(() => {
+      toast.success(`Explanation of ${this.#truncateSentence(translation.sentence)} is saved`)
+    }).catch((e) => {
+      if (e instanceof DuplicatedError) {
+        toast.error(`Explanation of ${this.#truncateSentence(translation.sentence)} is already existed`)
+        return
+      }
+      toast.error(`Failed to save explanation of ${this.#truncateSentence(translation.sentence)}`)
+    })
+  }
+  deleteBasic(key: string) {
+    this.rep?.mutate.deleteBasic(key)
+  }
+  subscribeBasic() {
+    return this.rep?.subscribe(
+      async tx => (await tx.scan({ prefix: prefixes.basic }).values().toArray()) as Array<WithID<Translation>>,
+      {
+        onData: (data) => {
+          this.basicTranslations = data;
+        }
+      }
+    )
+  }
+  // util
+  #truncateSentence(sentence: string) {
+    const threshold = 10;
+    return sentence.length > threshold ? sentence.slice(0, threshold) + "..." : sentence
   }
 }
 
