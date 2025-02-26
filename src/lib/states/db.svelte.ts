@@ -17,7 +17,7 @@ type WithID<T extends Record<string, string>> = T & { id: string }
 const prefixes = {
   vocabulary: "Vocabulary/",
   basic: "Basic/",
-  // check: "Check/",
+  check: "Check/",
   // compare: "Compare/",
   // pattern: "Pattern/"
 } as const
@@ -50,7 +50,6 @@ const mutators = {
       throw new DuplicatedError()
     }
     const uuid = uuidv4();
-    console.log(uuid)
     await tx.set(`${prefixes.basic}${uuid}`, {
       id: uuid,
       sentence,
@@ -59,6 +58,24 @@ const mutators = {
   },
   deleteBasic: async (tx, key: string) => {
     await tx.del(`${prefixes.basic}${key}`);
+  },
+  saveCheck: async (tx, {
+    sentence,
+    explanation
+  }: Translation) => {
+    const existed = (await tx.scan({ prefix: prefixes.check }).values().toArray() as Array<WithID<Translation>>).find(v => v.sentence === sentence);
+    if (existed) {
+      throw new DuplicatedError()
+    }
+    const uuid = uuidv4();
+    await tx.set(`${prefixes.check}${uuid}`, {
+      id: uuid,
+      sentence,
+      explanation
+    });
+  },
+  deleteCheck: async (tx, key: string) => {
+    await tx.del(`${prefixes.check}${key}`);
   }
 } satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
 
@@ -68,6 +85,7 @@ class DB {
   rep = $state<Replicache<ReplicacheSpec>>();
   vocabularies = $state<Array<WithID<Vocabulary>>>([]);
   basicTranslations = $state<Array<WithID<Translation>>>([]);
+  checkTranslations = $state<Array<WithID<Translation>>>([]);
   init(userId: string) {
     const rep = new Replicache<ReplicacheSpec>({
       name: userId,
@@ -127,6 +145,32 @@ class DB {
       }
     )
   }
+  // Check
+  saveCheck(translation: Translation) {
+    this.rep?.mutate.saveCheck(translation).then(() => {
+      toast.success(`Explanation of ${this.#truncateSentence(translation.sentence)} is saved`)
+    }).catch((e) => {
+      if (e instanceof DuplicatedError) {
+        toast.error(`Explanation of ${this.#truncateSentence(translation.sentence)} is already existed`)
+        return
+      }
+      toast.error(`Failed to save explanation of ${this.#truncateSentence(translation.sentence)}`)
+    })
+  }
+  deleteCheck(key: string) {
+    this.rep?.mutate.deleteCheck(key)
+  }
+  subscribeCheck() {
+    return this.rep?.subscribe(
+      async tx => (await tx.scan({ prefix: prefixes.check }).values().toArray()) as Array<WithID<Translation>>,
+      {
+        onData: (data) => {
+          this.checkTranslations = data;
+        }
+      }
+    )
+  }
+
   // util
   #truncateSentence(sentence: string) {
     const threshold = 10;

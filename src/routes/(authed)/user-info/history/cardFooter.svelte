@@ -5,7 +5,11 @@
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import { marked } from 'marked';
 
-	const { explanation, onDelete }: { explanation: string; onDelete: () => void } = $props();
+	const {
+		title,
+		explanation,
+		onDelete
+	}: { title: string; explanation: string; onDelete: () => void } = $props();
 </script>
 
 <CardContent class="flex justify-between gap-2">
@@ -14,6 +18,12 @@
 			<Button builders={[builder]} variant="outline">View</Button>
 		</Dialog.Trigger>
 		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title class="pr-4 leading-5">
+					{title}
+				</Dialog.Title>
+			</Dialog.Header>
+
 			<ScrollArea>
 				<div class="text-base">
 					{@html marked(explanation)}

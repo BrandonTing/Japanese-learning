@@ -3,8 +3,10 @@
 	import ContentBlock from '@/components/contentBlock.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea';
+	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
+	import { Bookmark } from 'lucide-svelte';
 	let text = '';
 	let canBookmark = false;
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
@@ -62,9 +64,22 @@
 				Submit
 			</Button>
 		{/if}
-		<!-- <Button variant="outline" size="icon" disabled={!canBookmark}>
+		<Button
+			variant="outline"
+			size="icon"
+			disabled={!canBookmark}
+			on:click={() => {
+				const message = $messages.findLast((message) => message.role === 'assistant')?.content;
+				if (!message) return;
+
+				db.saveCheck({
+					sentence: text,
+					explanation: message
+				});
+			}}
+		>
 			<Bookmark class="h-4 w-4" />
-		</Button> -->
+		</Button>
 	</div>
 	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
 </div>
