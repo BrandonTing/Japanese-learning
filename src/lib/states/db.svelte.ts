@@ -2,12 +2,24 @@ import { DuplicatedError } from "@/error";
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
 import { v4 as uuidv4 } from "uuid";
-export type Vocabulary = {
+type Vocabulary = {
   vocabulary: string,
   explanation: string
 }
 
-export type Translation = {
+type Translation = {
+  sentence: string,
+  explanation: string
+}
+
+type Compare = {
+  targetSentence: string,
+  sentence: string,
+  explanation: string
+}
+
+type Pattern = {
+  pattern: string,
   sentence: string,
   explanation: string
 }
@@ -18,11 +30,12 @@ const prefixes = {
   vocabulary: "Vocabulary/",
   basic: "Basic/",
   check: "Check/",
-  // compare: "Compare/",
-  // pattern: "Pattern/"
+  compare: "Compare/",
+  pattern: "Pattern/"
 } as const
 
 const mutators = {
+  // Vocabulary
   saveVocabulary: async (tx, {
     vocabulary,
     explanation
@@ -41,6 +54,7 @@ const mutators = {
   deleteVocabulary: async (tx, key: string) => {
     await tx.del(`${prefixes.vocabulary}${key}`);
   },
+  // Basic
   saveBasic: async (tx, {
     sentence,
     explanation
@@ -59,6 +73,7 @@ const mutators = {
   deleteBasic: async (tx, key: string) => {
     await tx.del(`${prefixes.basic}${key}`);
   },
+  // Check
   saveCheck: async (tx, {
     sentence,
     explanation
@@ -76,6 +91,50 @@ const mutators = {
   },
   deleteCheck: async (tx, key: string) => {
     await tx.del(`${prefixes.check}${key}`);
+  },
+  // Compare
+  saveCompare: async (tx, {
+    sentence,
+    targetSentence,
+    explanation
+  }: Compare) => {
+    const existed = (await tx.scan({ prefix: prefixes.check }).values().toArray() as Array<WithID<Compare>>)
+      .find(v => v.sentence === sentence && v.targetSentence === targetSentence);
+    if (existed) {
+      throw new DuplicatedError()
+    }
+    const uuid = uuidv4();
+    await tx.set(`${prefixes.compare}${uuid}`, {
+      id: uuid,
+      sentence,
+      targetSentence,
+      explanation
+    });
+  },
+  deleteCompare: async (tx, key: string) => {
+    await tx.del(`${prefixes.compare}${key}`);
+  },
+  // Pattern
+  savePattern: async (tx, {
+    sentence,
+    pattern,
+    explanation
+  }: Pattern) => {
+    const existed = (await tx.scan({ prefix: prefixes.pattern }).values().toArray() as Array<WithID<Pattern>>)
+      .find(v => v.sentence === sentence && v.pattern === pattern);
+    if (existed) {
+      throw new DuplicatedError()
+    }
+    const uuid = uuidv4();
+    await tx.set(`${prefixes.pattern}${uuid}`, {
+      id: uuid,
+      sentence,
+      pattern,
+      explanation
+    });
+  },
+  deletePattern: async (tx, key: string) => {
+    await tx.del(`${prefixes.pattern}${key}`);
   }
 } satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
 
@@ -86,6 +145,8 @@ class DB {
   vocabularies = $state<Array<WithID<Vocabulary>>>([]);
   basicTranslations = $state<Array<WithID<Translation>>>([]);
   checkTranslations = $state<Array<WithID<Translation>>>([]);
+  compareTranslations = $state<Array<WithID<Compare>>>([]);
+  patternTranslations = $state<Array<WithID<Pattern>>>([]);
   init(userId: string) {
     const rep = new Replicache<ReplicacheSpec>({
       name: import.meta.env.DEV ? "Local Dev" : userId,
@@ -166,6 +227,58 @@ class DB {
       {
         onData: (data) => {
           this.checkTranslations = data;
+        }
+      }
+    )
+  }
+
+  // Compare
+  saveCompare(compare: Compare) {
+    this.rep?.mutate.saveCompare(compare).then(() => {
+      toast.success(`Explanation of ${this.#truncateSentence(compare.sentence)} is saved`)
+    }).catch((e) => {
+      if (e instanceof DuplicatedError) {
+        toast.error(`Explanation of ${this.#truncateSentence(compare.sentence)} is already existed`)
+        return
+      }
+      toast.error(`Failed to save explanation of ${this.#truncateSentence(compare.sentence)}`)
+    })
+  }
+  deleteCompare(key: string) {
+    this.rep?.mutate.deleteCompare(key)
+  }
+  subscribeCompare() {
+    return this.rep?.subscribe(
+      async tx => (await tx.scan({ prefix: prefixes.compare }).values().toArray()) as Array<WithID<Compare>>,
+      {
+        onData: (data) => {
+          this.compareTranslations = data;
+        }
+      }
+    )
+  }
+
+  // Pattern
+  savePattern(pattern: Pattern) {
+    this.rep?.mutate.savePattern(pattern).then(() => {
+      toast.success(`Explanation of ${this.#truncateSentence(pattern.sentence)} is saved`)
+    }).catch((e) => {
+      if (e instanceof DuplicatedError) {
+        toast.error(`Explanation of ${this.#truncateSentence(pattern.sentence)} is already existed`)
+        return
+      }
+      toast.error(`Failed to save explanation of ${this.#truncateSentence(pattern.sentence)}`)
+    })
+  }
+  deletePattern(key: string) {
+    this.rep?.mutate.deletePattern(key)
+  }
+  subscribePattern() {
+    return this.rep?.subscribe(
+      async tx => (await tx.scan({ prefix: prefixes.pattern }).values().toArray()) as Array<WithID<Pattern>>,
+      {
+        onData: (data) => {
+          this.patternTranslations = data;
         }
       }
     )

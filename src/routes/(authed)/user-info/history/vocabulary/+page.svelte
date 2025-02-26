@@ -30,7 +30,11 @@
 							{vocabulary}
 						</CardTitle>
 					</CardHeader>
-					<CardFooter title={vocabulary} {explanation} onDelete={() => db.deleteVocabulary(id)} />
+					<CardFooter {explanation} onDelete={() => db.deleteVocabulary(id)}>
+						{#snippet title()}
+							{vocabulary}
+						{/snippet}
+					</CardFooter>
 				</Card>
 			</div>
 		{/each}

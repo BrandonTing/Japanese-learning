@@ -30,7 +30,11 @@
 							{sentence}
 						</CardTitle>
 					</CardHeader>
-					<CardFooter title={sentence} {explanation} onDelete={() => db.deleteCheck(id)} />
+					<CardFooter {explanation} onDelete={() => db.deleteCheck(id)}>
+						{#snippet title()}
+							{sentence}
+						{/snippet}
+					</CardFooter>
 				</Card>
 			</div>
 		{/each}

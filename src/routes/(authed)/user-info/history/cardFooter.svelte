@@ -4,12 +4,13 @@
 	import { CardContent } from '@/components/ui/card';
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import { marked } from 'marked';
+	import type { Snippet } from 'svelte';
 
 	const {
 		title,
 		explanation,
 		onDelete
-	}: { title: string; explanation: string; onDelete: () => void } = $props();
+	}: { title: Snippet; explanation: string; onDelete: () => void } = $props();
 </script>
 
 <CardContent class="flex justify-between gap-2">
@@ -20,7 +21,7 @@
 		<Dialog.Content>
 			<Dialog.Header>
 				<Dialog.Title class="pr-4 leading-5">
-					{title}
+					{@render title()}
 				</Dialog.Title>
 			</Dialog.Header>
 

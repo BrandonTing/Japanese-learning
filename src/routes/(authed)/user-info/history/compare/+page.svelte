@@ -1,17 +1,14 @@
 <script lang="ts">
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { Button } from '@/components/ui/button';
-	import { Card, CardContent, CardTitle } from '@/components/ui/card';
+	import { Card, CardTitle } from '@/components/ui/card';
 	import CardHeader from '@/components/ui/card/card-header.svelte';
-	import { ScrollArea } from '@/components/ui/scroll-area';
 	import { db } from '@/states/db.svelte';
-	import { marked } from 'marked';
 	import { flip } from 'svelte/animate';
+	import CardFooter from '../cardFooter.svelte';
 	$effect(() => {
 		if (!db.rep) {
 			return;
 		}
-		const unsubscribe = db.subscribeVocabularies();
+		const unsubscribe = db.subscribeCompare();
 		return () => {
 			unsubscribe?.();
 		};
@@ -22,32 +19,38 @@
 	{#if !db.rep}
 		Loading...
 	{/if}
-	{#each db.vocabularies as { vocabulary, explanation } (vocabulary)}
-		<div animate:flip={{ duration: 300 }}>
-			<Card>
-				<CardHeader>
-					<CardTitle>
-						{vocabulary}
-					</CardTitle>
-				</CardHeader>
-				<CardContent class="flex justify-between gap-2">
-					<Popover.Root portal={null}>
-						<Popover.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="outline">View</Button>
-						</Popover.Trigger>
-						<Popover.Content class="md:w-96">
-							<ScrollArea class="h-[60vh]">
-								<div class="text-base">
-									{@html marked(explanation)}
-								</div>
-							</ScrollArea>
-						</Popover.Content>
-					</Popover.Root>
-					<Button size="sm" variant="outline" onclick={() => db.deleteVocabulary(vocabulary)}>
-						Delete
-					</Button>
-				</CardContent>
-			</Card>
-		</div>
-	{/each}
+	{#if db.compareTranslations.length === 0}
+		<p>No Compare history yet.</p>
+	{:else}
+		{#each db.compareTranslations as { id, targetSentence, sentence, explanation } (id)}
+			<div animate:flip={{ duration: 300 }}>
+				<Card>
+					<CardHeader>
+						<CardTitle>
+							<div class="flex justify-between gap-4">
+								<span class="w-[100px] md:w-[150px] flex-shrink-0">Target:</span>
+								<span>{targetSentence}</span>
+							</div>
+							<div class="flex justify-between gap-4">
+								<span class="w-[100px] md:w-[150px] flex-shrink-0">Sentence:</span>
+								<span>{sentence}</span>
+							</div>
+						</CardTitle>
+					</CardHeader>
+					<CardFooter {explanation} onDelete={() => db.deleteCompare(id)}>
+						{#snippet title()}
+							<div class="flex justify-between gap-4">
+								<span class="w-[100px] flex-shrink-0">Target:</span>
+								<span>{targetSentence}</span>
+							</div>
+							<div class="flex justify-between gap-4">
+								<span class="w-[100px] flex-shrink-0">Sentence:</span>
+								<span>{sentence}</span>
+							</div>
+						{/snippet}
+					</CardFooter>
+				</Card>
+			</div>
+		{/each}
+	{/if}
 </div>
