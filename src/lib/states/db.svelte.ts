@@ -50,12 +50,15 @@ class DB {
   deleteVocabulary(key: string) {
     this.rep?.mutate.deleteVocabulary(key)
   }
-  subscribeVocabularies() {
+   subscribeVocabularies(userId: string) {
+    if (!this.rep) {
+      this.init(userId)
+    }
+
     return this.rep?.subscribe(
       async tx => (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray()) as Array<(Vocabulary)>,
       {
         onData: (data) => {
-          console.log(data)
           this.vocabularies = data;
         }
       }
