@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { authClient } from '@/auth-client';
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardTitle } from '@/components/ui/card';
 	import CardHeader from '@/components/ui/card/card-header.svelte';
@@ -8,13 +7,11 @@
 	import { db } from '@/states/db.svelte';
 	import { marked } from 'marked';
 	import { flip } from 'svelte/animate';
-	const session = authClient.useSession();
 	$effect(() => {
-		const userId = $session.data?.user.id;
-		if (!userId) {
+		if (!db.rep) {
 			return;
 		}
-		const unsubscribe = db.subscribeVocabularies(userId ?? '');
+		const unsubscribe = db.subscribeVocabularies();
 		return () => {
 			unsubscribe?.();
 		};
@@ -22,6 +19,9 @@
 </script>
 
 <div class="flex gap-4 flex-wrap">
+	{#if !db.rep}
+		Loading...
+	{/if}
 	{#each db.vocabularies as { vocabulary, explanation } (vocabulary)}
 		<div animate:flip={{ duration: 300 }}>
 			<Card>
