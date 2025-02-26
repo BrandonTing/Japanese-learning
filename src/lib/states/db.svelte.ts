@@ -1,58 +1,65 @@
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
 
-export type Item = {
-  key: string,
-  content: string
+export type Vocabulary = {
+  vocabulary: string,
+  explanation: string
+}
+
+const prefixes = {
+  vocabulary: "Vocabulary/"
 }
 
 type ReplicacheSpec = {
-  saveVocabulary: (tx: WriteTransaction, args: Item) => Promise<void>
-  deleteVocabulary: (tx: WriteTransaction, args: Item["key"]) => Promise<void>
+  saveVocabulary: (tx: WriteTransaction, args: Vocabulary) => Promise<void>
+  deleteVocabulary: (tx: WriteTransaction, args: Vocabulary["vocabulary"]) => Promise<void>
 }
 
 class DB {
   rep = $state<Replicache<ReplicacheSpec>>();
-  list = $state<Array<Item>>([]);
+  vocabularies = $state<Array<Vocabulary>>([]);
   init(userId: string) {
     const rep = new Replicache<ReplicacheSpec>({
       name: userId,
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators: {
         saveVocabulary: async (tx, {
-          key,
-          content
+          vocabulary,
+          explanation
         }) => {
-          await tx.set(`Vocabulary/${key}`, {
-            key,
-            content
+          await tx.set(`${prefixes.vocabulary}${vocabulary}`, {
+            vocabulary,
+            explanation
           });
         },
         deleteVocabulary: async (tx, key) => {
-          await tx.del(`Vocabulary/${key}`);
+          await tx.del(`${prefixes.vocabulary}${key}`);
         }
       },
     });
     import.meta.hot?.dispose(() => rep.close());
     this.rep = rep;
-    rep.subscribe(
-      async tx => (await tx.scan({ prefix: "Vocabulary/" }).values().toArray()) as Array<(Item)>,
-      {
-        onData: (data) => {
-          this.list = data;
-        }
-      }
-    )
   }
-  saveVocabulary(item: Item) {
-    this.rep?.mutate.saveVocabulary(item).then(() => {
-      toast.success(`Explanation of ${item.key} is saved`)
+  saveVocabulary(vocabulary: Vocabulary) {
+    this.rep?.mutate.saveVocabulary(vocabulary).then(() => {
+      toast.success(`Explanation of ${vocabulary.vocabulary} is saved`)
     }).catch(() => {
-      toast.error(`Failed to save explanation of ${item.key}`)
+      toast.error(`Failed to save explanation of ${vocabulary.vocabulary}`)
     })
   }
   deleteVocabulary(key: string) {
     this.rep?.mutate.deleteVocabulary(key)
+  }
+  subscribeVocabularies() {
+    return this.rep?.subscribe(
+      async tx => (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray()) as Array<(Vocabulary)>,
+      {
+        onData: (data) => {
+          console.log(data)
+          this.vocabularies = data;
+        }
+      }
+    )
   }
 }
 

@@ -64,8 +64,8 @@
 						return;
 					}
 					db.saveVocabulary({
-						key: text,
-						content
+						vocabulary: text,
+						explanation: content
 					});
 				}}
 			>

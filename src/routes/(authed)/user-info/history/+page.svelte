@@ -6,16 +6,19 @@
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import { db } from '@/states/db.svelte';
 	import { marked } from 'marked';
+	import { onDestroy } from 'svelte';
 	import { flip } from 'svelte/animate';
+	const unsubscribe = db.subscribeVocabularies();
+	onDestroy(() => unsubscribe?.());
 </script>
 
 <div class="flex gap-4 flex-wrap">
-	{#each db.list as item (item.key)}
+	{#each db.vocabularies as { vocabulary, explanation } (vocabulary)}
 		<div animate:flip={{ duration: 300 }}>
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{item.key}
+						{vocabulary}
 					</CardTitle>
 				</CardHeader>
 				<CardContent class="flex justify-between gap-2">
@@ -26,12 +29,12 @@
 						<Popover.Content class="md:w-96">
 							<ScrollArea class="h-[60vh]">
 								<div class="text-base">
-									{@html marked(item.content)}
+									{@html marked(explanation)}
 								</div>
 							</ScrollArea>
 						</Popover.Content>
 					</Popover.Root>
-					<Button size="sm" variant="outline" onclick={() => db.deleteVocabulary(item.key)}>
+					<Button size="sm" variant="outline" onclick={() => db.deleteVocabulary(vocabulary)}>
 						Delete
 					</Button>
 				</CardContent>
