@@ -1,17 +1,16 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { historyTabs } from './utils';
 	let { children } = $props();
 </script>
 
-<Tabs.Root value="account" class="w-[400px]">
-	<Tabs.List class="grid w-full grid-cols-2">
-		<Tabs.Trigger value="account">Account</Tabs.Trigger>
-		<Tabs.Trigger value="password">Password</Tabs.Trigger>
+<Tabs.Root class="mb-2" onValueChange={(value) => goto(`/user-info/history/${value}`)}>
+	<Tabs.List class="flex">
+		{#each historyTabs as tab}
+			<Tabs.Trigger value={tab.path}>{tab.label}</Tabs.Trigger>
+		{/each}
 	</Tabs.List>
-	<Tabs.Content value="account">
-		{@render children()}
-	</Tabs.Content>
-	<Tabs.Content value="password">
-		{@render children()}
-	</Tabs.Content>
 </Tabs.Root>
+
+{@render children()}
