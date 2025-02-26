@@ -88,7 +88,7 @@ class DB {
   checkTranslations = $state<Array<WithID<Translation>>>([]);
   init(userId: string) {
     const rep = new Replicache<ReplicacheSpec>({
-      name: userId,
+      name: import.meta.env.DEV ? "Local Dev" : userId,
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators,
     });
