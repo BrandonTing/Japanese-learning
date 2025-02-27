@@ -8,7 +8,7 @@
 	import { marked } from 'marked';
 	export let level: string;
 	const { append, messages, isLoading, setMessages, error } = useChat({
-		api: '/api/generateGrammer'
+		api: '/api/ai/generateGrammer'
 	});
 </script>
 

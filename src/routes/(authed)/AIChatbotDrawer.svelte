@@ -10,6 +10,7 @@
 	import { MessageSquare } from 'lucide-svelte';
 	import { marked } from 'marked';
 	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
+		api: '/api/ai/chat',
 		onResponse: () => {
 			const lastMessage = $messages.findLast((message) => message.role === 'user');
 			// find element by id

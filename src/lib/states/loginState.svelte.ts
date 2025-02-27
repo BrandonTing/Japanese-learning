@@ -47,7 +47,15 @@ class LoginState {
           failedReason: error.message ?? error.statusText
         });
       }
-      goto('./start-learning');
+      yield* Effect.tryPromise({
+        try: () => {
+          return goto('./start-learning')
+        },
+        catch: () =>
+          new AuthError({
+            failedReason: 'Failed to signUp'
+          })
+      });
       return data;
     }).pipe(
       Effect.catchTag('AuthError', (e) => {

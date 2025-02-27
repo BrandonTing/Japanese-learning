@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Button } from '@/components/ui/button';
 	import { cn } from '@/utils';
 	import { CircleX } from 'lucide-svelte';
 	import type { ClassValue } from 'svelte/elements';

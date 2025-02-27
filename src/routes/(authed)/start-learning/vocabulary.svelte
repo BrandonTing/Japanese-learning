@@ -1,22 +1,21 @@
 <script lang="ts">
-	import * as Accordion from '$lib/components/ui/accordion';
 	import ClearInput from '@/components/clearInput.svelte';
-	import ErrorMessage from '@/components/errorMessage.svelte';
+	import ContentBlock from '@/components/contentBlock.svelte';
 	import { Button } from '@/components/ui/button';
 	import Input from '@/components/ui/input/input.svelte';
-	import { vocabularyMap } from '@/states/vocabularySearchStore';
+	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
-	import { marked } from 'marked';
-	const VOCABULARY_ACCORDION_VALUE = 'VOCABULARY_ACCORDION_VALUE';
+	import { Bookmark } from 'lucide-svelte';
 	let text = '';
-	let accordionValue = '';
-	let content = '';
+	let canBookmark = false;
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
-		api: '/api/vocabulary',
-		onFinish(message) {
-			$vocabularyMap[text] = message.content;
-		}
+		api: '/api/ai/vocabulary'
 	});
+	$: canBookmark =
+		text === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
+	function clear() {
+		text = '';
+	}
 </script>
 
 <div class="flex gap-4 flex-col px-1">
@@ -32,61 +31,47 @@
 				class="w-full sm:w-64"
 			/>
 			{#if text}
-				<ClearInput clear={() => (text = '')} />
+				<ClearInput {clear} />
 			{/if}
 		</div>
 		<div class="flex gap-1">
-			<Button
-				variant="outline"
-				class="block md:hidden"
-				disabled={!text.trim()}
-				onclick={() => (text = '')}>Clear</Button
+			<Button variant="outline" class="block md:hidden" disabled={!text.trim()} onclick={clear}
+				>Clear</Button
 			>
-			<Button
-				onclick={() => {
-					accordionValue = VOCABULARY_ACCORDION_VALUE;
-					if ($vocabularyMap[text]) {
-						content = $vocabularyMap[text];
-						return;
-					}
-					content = '';
-					setMessages([]);
-					append({
-						role: 'user',
-						content: text
-					});
-				}}
-				disabled={!text.trim()}
-			>
-				Explain
-			</Button>
-			{#if accordionValue !== ''}
+			{#if $isLoading}
+				<Button onclick={stop}>Stop</Button>
+			{:else}
 				<Button
 					onclick={() => {
-						stop();
-					}}>Stop</Button
+						setMessages([]);
+						append({
+							role: 'user',
+							content: text
+						});
+					}}
+					disabled={!text.trim()}
 				>
+					Explain
+				</Button>
 			{/if}
+			<Button
+				variant="outline"
+				size="icon"
+				disabled={!canBookmark}
+				on:click={() => {
+					const content = $messages.findLast((message) => message.role === 'assistant')?.content;
+					if (!content) {
+						return;
+					}
+					db.saveVocabulary({
+						vocabulary: text,
+						explanation: content
+					});
+				}}
+			>
+				<Bookmark class="h-4 w-4" />
+			</Button>
 		</div>
 	</div>
-	<Accordion.Root bind:value={accordionValue}>
-		<Accordion.Item value={VOCABULARY_ACCORDION_VALUE} class="border-0">
-			<Accordion.Content class="text-base">
-				{#if content}
-					{@html marked(content)}
-				{:else}
-					{#each $messages as message}
-						{#if message.role === 'assistant'}
-							{@html marked(message.content)}
-						{/if}
-					{/each}
-				{/if}
-			</Accordion.Content>
-		</Accordion.Item>
-	</Accordion.Root>
-	{#if $isLoading}
-		Loading...
-	{:else if $error}
-		<ErrorMessage message={$error.message} />
-	{/if}
+	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
 </div>

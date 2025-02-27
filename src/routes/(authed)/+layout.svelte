@@ -2,10 +2,12 @@
 	import { goto } from '$app/navigation';
 	import { authClient } from '@/auth-client';
 	import Header from '@/components/header/header.svelte';
+	import { db } from '@/states/db.svelte';
 	import { toast } from 'svelte-sonner';
 	import AiChatbotDrawer from './AIChatbotDrawer.svelte';
 	let { children } = $props();
 	const session = authClient.useSession();
+
 	$effect(() => {
 		if (!$session.data) return;
 		if (!$session.data.session) {
@@ -13,6 +15,9 @@
 				duration: 500
 			});
 			goto('/');
+		}
+		if ($session.data.user) {
+			db.init($session.data.user.id);
 		}
 	});
 </script>

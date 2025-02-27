@@ -1,22 +1,30 @@
 <script lang="ts">
-	import * as Accordion from '$lib/components/ui/accordion';
 	import ClearInput from '@/components/clearInput.svelte';
-	import ErrorMessage from '@/components/errorMessage.svelte';
+	import ContentBlock from '@/components/contentBlock.svelte';
 	import { Button } from '@/components/ui/button';
 	import { Textarea } from '@/components/ui/textarea';
+	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
-	import { marked } from 'marked';
+	import { Bookmark } from 'lucide-svelte';
 	let text = '';
-	const accordionTypes = {
-		CORRECTNESS: 'Check_Correctness',
-		EXPLAIN: 'Explain',
-		NONE: ''
-	} as const;
-	let accordionValue: (typeof accordionTypes)[keyof typeof accordionTypes] = '';
+	let canBookmark = false;
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
-		api: '/api/translation'
+		api: '/api/ai/translation'
 	});
+	$: prompt = genPrompt(text);
+	$: canBookmark =
+		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
+	function genPrompt(raw: string) {
+		return `
+      請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
+      ${text}
+    `;
+	}
+
+	function clear() {
+		text = '';
+	}
 </script>
 
 <div class="flex gap-4 flex-col px-1">
@@ -26,70 +34,52 @@
 	<div class="relative">
 		<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
 		{#if text}
-			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
+			<ClearInput {clear} className="top-full -translate-y-6" />
 		{/if}
 	</div>
 	<div class="flex justify-end gap-2">
-		<Button
-			variant="outline"
-			class="block md:hidden"
-			disabled={!text.trim()}
-			onclick={() => (text = '')}>Clear</Button
+		<Button variant="outline" class="block md:hidden" disabled={!text.trim()} onclick={clear}
+			>Clear</Button
 		>
-		<Button
-			onclick={() => {
-				accordionValue = accordionTypes.EXPLAIN;
-				Sentry.startSpan(
-					{
-						name: 'Translate and Explain Grammer',
-						op: 'Translate'
-					},
-					() => {
-						setMessages([]);
-						append({
-							role: 'user',
-							content: `
-                  請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
-                  ${text}
-                `
-						});
-					}
-				);
-			}}
-			disabled={!text.trim() || accordionValue === accordionTypes.EXPLAIN}>Submit</Button
-		>
-		{#if accordionValue !== accordionTypes.NONE}
+		{#if $isLoading}
+			<Button onclick={stop}>Stop</Button>
+		{:else}
 			<Button
 				onclick={() => {
-					accordionValue = accordionTypes.NONE;
-					stop();
-				}}>Close</Button
+					Sentry.startSpan(
+						{
+							name: 'Translate and Explain Grammer',
+							op: 'Translate'
+						},
+						() => {
+							setMessages([]);
+							append({
+								role: 'user',
+								content: prompt
+							});
+						}
+					);
+				}}
+				disabled={!text.trim()}
 			>
+				Submit
+			</Button>
 		{/if}
+		<Button
+			variant="outline"
+			size="icon"
+			disabled={!canBookmark}
+			on:click={() => {
+				const content = $messages.findLast((message) => message.role === 'assistant')?.content;
+				if (!content) return;
+				db.saveBasic({
+					sentence: text,
+					explanation: content
+				});
+			}}
+		>
+			<Bookmark class="h-4 w-4" />
+		</Button>
 	</div>
-	<Accordion.Root bind:value={accordionValue}>
-		<Accordion.Item value={accordionTypes.CORRECTNESS} class="border-0">
-			<Accordion.Content class="text-base">
-				{#each $messages as message}
-					{#if message.role === 'assistant'}
-						{@html marked(message.content)}
-					{/if}
-				{/each}
-			</Accordion.Content>
-		</Accordion.Item>
-		<Accordion.Item value={accordionTypes.EXPLAIN} class="border-0">
-			<Accordion.Content class="text-base">
-				{#each $messages as message}
-					{#if message.role === 'assistant'}
-						{@html marked(message.content)}
-					{/if}
-				{/each}
-			</Accordion.Content>
-		</Accordion.Item>
-	</Accordion.Root>
-	{#if $isLoading}
-		Loading...
-	{:else if $error}
-		<ErrorMessage message={$error.message} />
-	{/if}
+	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
 </div>

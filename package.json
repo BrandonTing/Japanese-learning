@@ -49,14 +49,15 @@
     "@ai-sdk/svelte": "^1.1.7",
     "@libsql/kysely-libsql": "^0.4.1",
     "@sentry/sveltekit": "^8",
-    "@standard-schema/spec": "^1.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "ai": "^4.1.10",
     "better-auth": "^1.1.14",
     "effect": "^3.12.7",
     "marked": "^15.0.6",
+    "replicache": "^15.0.1",
     "temporal-polyfill": "^0.2.5",
+    "uuid": "^11.1.0",
     "valibot": "^1.0.0-rc.0",
     "zod": "^3.24.1"
   }

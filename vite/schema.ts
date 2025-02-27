@@ -6,4 +6,9 @@ export const envSchema = v.object({
   BETTER_AUTH_SECRET: v.string(),
   OPENAI_API_KEY: v.string(),
   VITE_MOCK_AI_RESPONSE: v.pipe(v.optional(v.string()), v.transform(input => input === "true")),
+  VITE_REPLICACHE_KEY: v.string()
 })
+
+export function validateEnv(env: unknown) {
+  return v.parse(envSchema, env)
+}
