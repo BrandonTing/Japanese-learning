@@ -14,9 +14,10 @@
 </script>
 
 <CardContent class="flex justify-between gap-2">
-	<Dialog.Root portal={null}>
+  <Button size="sm" variant="outline" onclick={onDelete}>Delete</Button>
+  <Dialog.Root portal={null}>
 		<Dialog.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="outline">View</Button>
+			<Button builders={[builder]} variant="outline">Details</Button>
 		</Dialog.Trigger>
 		<Dialog.Content>
 			<Dialog.Header>
@@ -24,7 +25,6 @@
 					{@render title()}
 				</Dialog.Title>
 			</Dialog.Header>
-
 			<ScrollArea>
 				<div class="text-base">
 					{@html marked(explanation)}
@@ -32,5 +32,4 @@
 			</ScrollArea>
 		</Dialog.Content>
 	</Dialog.Root>
-	<Button size="sm" variant="outline" onclick={onDelete}>Delete</Button>
 </CardContent>

@@ -153,7 +153,7 @@ class DB {
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators,
     });
-    import.meta.hot?.dispose(() => rep.close());
+    import.meta.hot?.dispose(() => rep.close())
     this.rep = rep;
   }
   // Vocabulary

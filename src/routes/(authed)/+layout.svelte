@@ -9,12 +9,13 @@
 	const session = authClient.useSession();
 
 	$effect(() => {
-		if (!$session.data) return;
-		if (!$session.data.session) {
+		if ($session.isPending) return;
+		if (!$session.data?.session) {
 			toast.warning('Your login session has expired, redirecting to Login page', {
 				duration: 500
 			});
 			goto('/');
+			return;
 		}
 		if ($session.data.user) {
 			db.init($session.data.user.id);
