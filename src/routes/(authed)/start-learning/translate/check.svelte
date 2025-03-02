@@ -12,15 +12,12 @@
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	$: prompt = genPrompt(text);
+	$: prompt = `
+      請判斷這句話文法是否正確，若錯誤，請提供錯誤之處：
+      ${text}
+    `;
 	$: canBookmark =
 		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
-	function genPrompt(raw: string) {
-		return `
-      請協助我翻譯以下句子，並判斷其中文法是否正確：
-      ${raw}
-    `;
-	}
 	function clear() {
 		text = '';
 	}
