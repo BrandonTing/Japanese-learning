@@ -8,22 +8,20 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { Bookmark } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 	let pattern = '';
 	let text = '';
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
 	$: canSubmit = pattern.trim() && text.trim();
-	$: prompt = genPrompt(pattern, text);
+	$: prompt = `
+    我會提供一個日文句子以及其中有出現的單詞，請協助翻譯這段話，並解釋該單詞或文法的意思：
+    單詞：${pattern}
+    ${text}
+  `;
 	$: canBookmark =
 		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
-	function genPrompt(pattern: string, text: string) {
-		return `
-      我會提供一個日文句子以及其中有出現的單詞，請協助翻譯這段話，並解釋該單詞或文法的意思：
-      單詞：${pattern}
-      ${text}
-    `;
-	}
 </script>
 
 <div class="flex gap-4 flex-col px-1">
@@ -51,6 +49,10 @@
 		{:else}
 			<Button
 				onclick={() => {
+					if (!text.includes(pattern)) {
+						toast.warning('The pattern is not found in the sentence.');
+						return;
+					}
 					Sentry.startSpan(
 						{
 							name: 'Translate and Explain Grammer',

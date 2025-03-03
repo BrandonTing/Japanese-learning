@@ -10,8 +10,7 @@
 </script>
 
 <div class="cursor w-lvw h-lvh">
-	<Toaster richColors position="bottom-center" />
-
+	<Toaster richColors position="top-center" />
 	<div class="container mx-auto p-4">
 		{@render children()}
 	</div>

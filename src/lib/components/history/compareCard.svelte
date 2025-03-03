@@ -1,40 +1,36 @@
 <script lang="ts">
-	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
 	import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 	import * as Dialog from '@/components/ui/dialog';
 	import { ScrollArea } from '@/components/ui/scroll-area';
+	import { Separator } from '@/components/ui/separator';
 	import { Info, Trash2 } from 'lucide-svelte';
 	import { marked } from 'marked';
 	let {
 		sentence,
-		pattern,
+		targetSentence,
 		deleteHandler,
 		explanation
-	}: { sentence: string; pattern: string; deleteHandler: () => void; explanation: string } =
+	}: { sentence: string; targetSentence: string; deleteHandler: () => void; explanation: string } =
 		$props();
-	const { prevPart, nextPart } = $derived.by(() => {
-		const parts = sentence.split(pattern);
-		const prevPart = parts[0].length > 10 ? `...${parts[0].slice(-10)}` : parts[0];
-		const nextPart = parts[1].length > 10 ? `${parts[1].slice(10)}...` : parts[1];
-		return {
-			prevPart,
-			nextPart
-		};
-	});
 </script>
 
 <Card>
 	<CardHeader>
-		<CardTitle>
-			{prevPart}
-			<Badge variant="secondary" class="text-lg text-primary mx-0.5">
-				{pattern}
-			</Badge>
-			{nextPart}
-		</CardTitle>
+		<CardTitle></CardTitle>
 	</CardHeader>
-	<CardContent class="flex justify-between gap-2">
+	<CardContent>
+		<div class="space-y-3">
+			<div>
+				<div class="text-xs font-medium text-muted-foreground mb-1">Target</div>
+				<p class="text-sm">{targetSentence}</p>
+			</div>
+			<Separator />
+			<div>
+				<div class="text-xs font-medium text-muted-foreground mb-1">Japanese</div>
+				<p class="text-sm">{sentence}</p>
+			</div>
+		</div>
 		<Button
 			size="sm"
 			variant="outline"
@@ -54,20 +50,19 @@
 				</Dialog.Trigger>
 				<Dialog.Content class="text-base">
 					<Dialog.Header>
-						<Dialog.Title>Sentence Pattern Details</Dialog.Title>
+						<Dialog.Title>Sentence Comparison Details</Dialog.Title>
 						<Dialog.Description>Full sentences and meaning analysis</Dialog.Description>
 					</Dialog.Header>
 
 					<div class="space-y-4 py-4">
 						<div class="space-y-2">
-							<h4 class=" font-bold">Full Sentence:</h4>
-							<p>{sentence}</p>
+							<h4 class="text-sm font-medium">Target Sentence:</h4>
+							<p class="text-sm">{targetSentence}</p>
 						</div>
+
 						<div class="space-y-2">
-							<h4 class="font-bold">Pattern:</h4>
-							<Badge variant="secondary" class="font-normal text-base">
-								{pattern}
-							</Badge>
+							<h4 class="text-sm font-medium">Japanese Sentence:</h4>
+							<p class="text-sm">{sentence}</p>
 						</div>
 						<div class="space-y-2">
 							<h4 class=" font-bold">Explanation:</h4>
