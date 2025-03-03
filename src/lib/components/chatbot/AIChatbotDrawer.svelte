@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Sheet from '$lib/components/ui/sheet';
+	import SaveConversationButton from '@/components/chatbot/saveChatButton.svelte';
 	import ClearInput from '@/components/clearInput.svelte';
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,7 +23,12 @@
 		}
 	});
 	let abortController = new AbortController();
-	let openChat = $page.url.searchParams.get('chat') === 'true';
+	$: openChat = $page.url.searchParams.get('chat') === 'true';
+	const inputId = 'chat-input';
+	$: if (openChat) {
+		const inputElement = document.getElementById(inputId);
+		inputElement?.focus();
+	}
 </script>
 
 <Sheet.Root
@@ -106,6 +112,7 @@
 							<Textarea
 								bind:value={$input}
 								placeholder="Type your message..."
+								id={inputId}
 								on:keydown={(e) => {
 									if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
 										return;
@@ -148,9 +155,15 @@
 									stop();
 									setMessages([]);
 								}}
+								disabled={$messages.length === 0}
 							>
 								New
 							</Button>
+							<SaveConversationButton
+								disabled={$messages.length === 0}
+								messages={$messages}
+								onSuccess={() => setMessages([])}
+							/>
 						</div>
 					</div>
 				</form>

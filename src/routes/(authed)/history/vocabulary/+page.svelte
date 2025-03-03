@@ -13,7 +13,7 @@
 		if (!db.rep) {
 			return;
 		}
-		const unsubscribe = db.subscribeVocabularies();
+		const unsubscribe = db.subscribeVocabulary();
 		return () => {
 			unsubscribe?.();
 		};
@@ -40,8 +40,9 @@
 							size="sm"
 							variant="outline"
 							class="text-destructive hover:text-destructive hover:bg-destructive/10"
-							onclick={() => db.deleteVocabulary(id)}>
-              <Trash2 class="size-4 mr-2" />Delete</Button
+							onclick={() => db.deleteVocabulary(id)}
+						>
+							<Trash2 class="size-4 mr-2" />Delete</Button
 						>
 						<Dialog.Root portal={null}>
 							<Dialog.Trigger asChild let:builder>

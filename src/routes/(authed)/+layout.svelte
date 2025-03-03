@@ -4,7 +4,7 @@
 	import Header from '@/components/header/header.svelte';
 	import { db } from '@/states/db.svelte';
 	import { toast } from 'svelte-sonner';
-	import AiChatbotDrawer from './AIChatbotDrawer.svelte';
+	import AiChatbotDrawer from '../../lib/components/chatbot/AIChatbotDrawer.svelte';
 	let { children } = $props();
 	const session = authClient.useSession();
 

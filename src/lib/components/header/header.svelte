@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import * as Avatar from '$lib/components/ui/avatar';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import * as Tooltip from '$lib/components/ui/tooltip';
@@ -10,19 +8,15 @@
 	import { getYYYYMMDD, getYYYYMMDDHirakana } from '@/dates';
 	import { headerDateState } from '@/states/headerDates.svelte';
 	import { loginState } from '@/states/loginState.svelte';
-	import { ChevronDown, Loader, LogOut, Menu } from 'lucide-svelte';
+	import { ChevronDown, LogOut, Menu } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
 	import { historyTabs } from '../../../routes/(authed)/history/utils';
-	import { userInfoNavItems } from '../../../routes/(authed)/user-info/utils';
 	const mainNavItems = [
 		{ title: 'Start Learning!', href: '/start-learning' },
 		// add history
 		{ title: 'History', href: `/history/${historyTabs[0].path}` },
 		// add user setting
 		{ title: 'User Info', href: `/user-setting` }
-		// TODO not implemented yet
-		// { title: 'Exam History', href: '/exam-history' },
-		// { title: 'Saved AI Conversations', href: '/saved-conversations' }
 	] as const;
 
 	const externalResources = [

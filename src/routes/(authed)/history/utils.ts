@@ -19,4 +19,12 @@ export const historyTabs = [
     label: "Pattern",
     path: "pattern",
   },
-] as const;
+  // chat
+  {
+    label: "Chat",
+    path: "chat",
+  },
+] satisfies Array<{
+  label: string;
+  path: string
+}>
