@@ -12,16 +12,12 @@
 	const { messages, append, isLoading, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	$: prompt = genPrompt(text);
+	$: prompt = `
+      請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
+      ${text.trim()}
+    `;
 	$: canBookmark =
 		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
-	function genPrompt(raw: string) {
-		return `
-      請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
-      ${text}
-    `;
-	}
-
 	function clear() {
 		text = '';
 	}

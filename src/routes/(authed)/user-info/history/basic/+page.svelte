@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { Card, CardTitle } from '@/components/ui/card';
-	import CardHeader from '@/components/ui/card/card-header.svelte';
+	import BasicCard from '@/components/history/basicCard.svelte';
 	import { db } from '@/states/db.svelte';
 	import { flip } from 'svelte/animate';
-	import CardFooter from '../cardFooter.svelte';
 	$effect(() => {
 		if (!db.rep) {
 			return;
@@ -24,18 +22,7 @@
 	{:else}
 		{#each db.basicTranslations as { id, sentence, explanation } (id)}
 			<div animate:flip={{ duration: 300 }} class="max-w-lg">
-				<Card class="h-full flex flex-col justify-between">
-					<CardHeader>
-						<CardTitle>
-							{sentence}
-						</CardTitle>
-					</CardHeader>
-					<CardFooter {explanation} onDelete={() => db.deleteBasic(id)}>
-						{#snippet title()}
-							{sentence}
-						{/snippet}
-					</CardFooter>
-				</Card>
+				<BasicCard {sentence} {explanation} deleteHandler={() => db.deleteBasic(id)} />
 			</div>
 		{/each}
 	{/if}

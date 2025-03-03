@@ -17,8 +17,8 @@
 	$: canSubmit = pattern.trim() && text.trim();
 	$: prompt = `
     我會提供一個日文句子以及其中有出現的單詞，請協助翻譯這段話，並解釋該單詞或文法的意思：
-    單詞：${pattern}
-    ${text}
+    單詞：${pattern.trim()}
+    ${text.trim()}
   `;
 	$: canBookmark =
 		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;

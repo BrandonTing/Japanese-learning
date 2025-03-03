@@ -13,17 +13,14 @@
 		api: '/api/ai/translation'
 	});
 	$: canSubmit = Boolean(targetMeaning.trim() && text.trim());
-	$: prompt = genPrompt(targetMeaning, text);
+	$: prompt = `
+    以下我會附上兩個句子，第一個句子是我期望的意思，第二個句子是我目前的日文造句，
+    請協助我確認第二個句子是否符合第一個句子的意思，若不符合，請解釋原因：
+    - ${targetMeaning.trim()}
+    - ${text.trim()}
+  `;
 	$: canBookmark =
 		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
-	function genPrompt(target: string, raw: string) {
-		return `
-      以下我會附上兩個句子，第一個句子是我期望的意思，第二個句子是我目前的日文造句，
-      請協助我確認第二個句子是否符合第一個句子的意思，若不符合，請解釋原因：
-      - ${target}
-      - ${raw}
-    `;
-	}
 </script>
 
 <div class="flex gap-4 flex-col px-1">

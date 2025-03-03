@@ -14,7 +14,7 @@
 	});
 	$: prompt = `
       請協助我翻譯以下句子，並判斷其中文法是否正確，若有誤，請詳細解釋錯誤之處：
-      ${text}
+      ${text.trim()}
     `;
 	$: canBookmark =
 		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
