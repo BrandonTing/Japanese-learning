@@ -13,8 +13,11 @@
 	import { ChevronDown, Loader, LogOut, Menu } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
 	import { userInfoNavItems } from '../../../routes/(authed)/user-info/utils';
+	import { historyTabs } from '../../../routes/(authed)/history/utils';
 	const mainNavItems = [
-		{ title: 'Start Learning!', href: '/start-learning' }
+		{ title: 'Start Learning!', href: '/start-learning' },
+		// add history
+		{ title: 'History', href: `/history/${historyTabs[0].path}` }
 		// TODO not implemented yet
 		// { title: 'Exam History', href: '/exam-history' },
 		// { title: 'Saved AI Conversations', href: '/saved-conversations' }

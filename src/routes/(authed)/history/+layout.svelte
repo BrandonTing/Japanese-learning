@@ -27,7 +27,7 @@
 	<Tabs.Root
 		class="mb-2 hidden md:block"
 		{value}
-		onValueChange={(value) => goto(`/user-info/history/${value}`)}
+		onValueChange={(value) => goto(`/history/${value}`)}
 	>
 		<Tabs.List class="flex">
 			{#each historyTabs as tab}
@@ -40,7 +40,7 @@
 		selected={selectionVal}
 		onSelectedChange={(val) => {
 			if (!val) return;
-			goto(`/user-info/history/${val.value}`);
+			goto(`/history/${val.value}`);
 		}}
 	>
 		<SelectTrigger class="w-32 md:hidden">
