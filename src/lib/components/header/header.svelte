@@ -12,12 +12,14 @@
 	import { loginState } from '@/states/loginState.svelte';
 	import { ChevronDown, Loader, LogOut, Menu } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
-	import { userInfoNavItems } from '../../../routes/(authed)/user-info/utils';
 	import { historyTabs } from '../../../routes/(authed)/history/utils';
+	import { userInfoNavItems } from '../../../routes/(authed)/user-info/utils';
 	const mainNavItems = [
 		{ title: 'Start Learning!', href: '/start-learning' },
 		// add history
-		{ title: 'History', href: `/history/${historyTabs[0].path}` }
+		{ title: 'History', href: `/history/${historyTabs[0].path}` },
+		// add user setting
+		{ title: 'User Info', href: `/user-setting` }
 		// TODO not implemented yet
 		// { title: 'Exam History', href: '/exam-history' },
 		// { title: 'Saved AI Conversations', href: '/saved-conversations' }
@@ -119,37 +121,6 @@
 				</div>
 			</div>
 			<div class="flex items-center">
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger>
-						<Avatar.Root class="hidden md:flex">
-							<Avatar.Image src="/user.svg" alt={username} />
-						</Avatar.Root>
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content>
-						<DropdownMenu.Group>
-							<DropdownMenu.Label>My Account</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-							<DropdownMenu.Item
-								on:click={() => {
-									goto(`/user-info${userInfoNavItems[0].href}`);
-								}}
-							>
-								User Info
-							</DropdownMenu.Item>
-							<DropdownMenu.Item
-								on:click={() => {
-									loginState.handleSignout();
-								}}
-							>
-								{#if loginState.isLoading}
-									<Loader class="animate-spin" />
-								{:else}
-									Sign Out
-								{/if}
-							</DropdownMenu.Item>
-						</DropdownMenu.Group>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
 				<Sheet.Root>
 					<Sheet.Trigger>
 						<Button variant="outline" size="icon" class="md:hidden">
@@ -159,12 +130,12 @@
 					<Sheet.Content side="right">
 						<nav class="flex flex-col space-y-4">
 							<Sheet.Close class="flex flex-col space-y-4">
-								{#each [...mainNavItems, { href: `/user-info${userInfoNavItems[0].href}`, title: 'User Info' }] as nav}
+								{#each mainNavItems as nav}
 									{@const isActive = page.url.pathname.includes(nav.href)}
 									<a
 										href={nav.href}
 										class={[
-											'hover:text-primary text-base font-medium transition-colors',
+											'hover:text-primary text-base font-medium transition-colors text-start',
 											isActive ? 'text-primary' : 'text-muted-foreground'
 										]}
 									>

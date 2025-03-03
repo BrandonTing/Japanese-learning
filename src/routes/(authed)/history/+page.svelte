@@ -4,7 +4,7 @@
 	import { historyTabs } from './utils';
 
 	onMount(() => {
-		goto(`/user-info/history/${historyTabs[0].path}`, {
+		goto(`/history/${historyTabs[0].path}`, {
 			replaceState: true
 		});
 	});
