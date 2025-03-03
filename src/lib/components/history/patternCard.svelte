@@ -60,17 +60,17 @@
 
 					<div class="space-y-4 py-4">
 						<div class="space-y-2">
-							<h4 class=" font-bold">Full Sentence:</h4>
+							<h4 class="text-sm font-medium text-muted-foreground">Full Sentence:</h4>
 							<p>{sentence}</p>
 						</div>
 						<div class="space-y-2">
-							<h4 class="font-bold">Pattern:</h4>
+							<h4 class="text-sm font-medium text-muted-foreground">Pattern:</h4>
 							<Badge variant="secondary" class="font-normal text-base">
 								{pattern}
 							</Badge>
 						</div>
 						<div class="space-y-2">
-							<h4 class=" font-bold">Explanation:</h4>
+							<h4 class="text-sm font-medium text-muted-foreground">Explanation:</h4>
 							<ScrollArea>
 								<div>
 									{@html marked(explanation)}

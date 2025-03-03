@@ -13,24 +13,29 @@
 		explanation
 	}: { sentence: string; targetSentence: string; deleteHandler: () => void; explanation: string } =
 		$props();
+	function truncateText(text: string) {
+		return text.length > 20 ? `${text.slice(0, 20)}...` : text;
+	}
+	let truncateTargetSentence = $derived(truncateText(targetSentence));
+  let truncateSentence = $derived(truncateText(sentence));
+  
 </script>
 
 <Card>
 	<CardHeader>
-		<CardTitle></CardTitle>
-	</CardHeader>
-	<CardContent>
-		<div class="space-y-3">
+		<CardTitle class="space-y-3">
 			<div>
-				<div class="text-xs font-medium text-muted-foreground mb-1">Target</div>
-				<p class="text-sm">{targetSentence}</p>
+				<div class="text-sm font-medium text-muted-foreground mb-1">Target</div>
+				<p class="text-base">{truncateTargetSentence}</p>
 			</div>
 			<Separator />
 			<div>
-				<div class="text-xs font-medium text-muted-foreground mb-1">Japanese</div>
-				<p class="text-sm">{sentence}</p>
+				<div class="text-sm font-medium text-muted-foreground mb-1">Japanese</div>
+				<p class="text-base">{truncateSentence}</p>
 			</div>
-		</div>
+		</CardTitle>
+	</CardHeader>
+	<CardContent class="flex justify-between gap-2">
 		<Button
 			size="sm"
 			variant="outline"
@@ -56,16 +61,16 @@
 
 					<div class="space-y-4 py-4">
 						<div class="space-y-2">
-							<h4 class="text-sm font-medium">Target Sentence:</h4>
-							<p class="text-sm">{targetSentence}</p>
+							<h4 class="text-sm font-medium text-muted-foreground">Target Sentence:</h4>
+							<p class="text-base">{targetSentence}</p>
 						</div>
 
 						<div class="space-y-2">
-							<h4 class="text-sm font-medium">Japanese Sentence:</h4>
-							<p class="text-sm">{sentence}</p>
+							<h4 class="text-sm font-medium text-muted-foreground">Japanese Sentence:</h4>
+							<p class="text-base">{sentence}</p>
 						</div>
 						<div class="space-y-2">
-							<h4 class=" font-bold">Explanation:</h4>
+							<h4 class="text-sm font-medium text-muted-foreground">Explanation:</h4>
 							<ScrollArea>
 								<div>
 									{@html marked(explanation)}
