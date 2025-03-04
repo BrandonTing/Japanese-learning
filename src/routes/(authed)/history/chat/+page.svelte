@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { Button } from '@/components/ui/button';
 	import { Card, CardContent } from '@/components/ui/card';
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import { db } from '@/states/db.svelte';
-	import { PlusCircle } from 'lucide-svelte';
 	import ChatButton from './chatButton.svelte';
 
 	$effect(() => {
@@ -24,9 +22,6 @@
 		<Card class="flex flex-col h-full">
 			<CardContent>
 				<div class="flex flex-col h-full">
-					<Button class="mb-4">
-						<PlusCircle class="mr-2 h-4 w-4" /> New chat
-					</Button>
 					{#if !db.rep}
 						Loading...
 					{/if}
