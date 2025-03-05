@@ -7,20 +7,18 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { Bookmark } from 'lucide-svelte';
-	let text = '';
-	let canBookmark = false;
-	const { messages, append, isLoading, stop, setMessages, error } = useChat({
+	let text = $state('');
+	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	$: prompt = genPrompt(text);
-	$: canBookmark =
-		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
-	function genPrompt(raw: string) {
-		return `
-      請協助我翻譯以下句子，並判斷其中文法是否正確：
-      ${raw}
-    `;
-	}
+	let isLoading = $derived($status === 'streaming');
+	let prompt = $derived(`
+      請協助我翻譯以下句子，並判斷其中文法是否正確，若有誤，請詳細解釋錯誤之處：
+      ${text.trim()}
+    `);
+	let canBookmark = $derived(
+		prompt === $messages.findLast((message) => message.role === 'user')?.content && !isLoading
+	);
 	function clear() {
 		text = '';
 	}
@@ -40,7 +38,7 @@
 		<Button variant="outline" class="block md:hidden" disabled={!text.trim()} onclick={clear}
 			>Clear</Button
 		>
-		{#if $isLoading}
+		{#if isLoading}
 			<Button onclick={stop}>Stop</Button>
 		{:else}
 			<Button
@@ -81,5 +79,5 @@
 			<Bookmark class="h-4 w-4" />
 		</Button>
 	</div>
-	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
+	<ContentBlock messages={$messages} {isLoading} error={$error}></ContentBlock>
 </div>

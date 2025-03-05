@@ -6,10 +6,11 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { marked } from 'marked';
-	export let level: string;
-	const { append, isLoading, messages, setMessages, error } = useChat({
+	const { level }: { level: string } = $props();
+	const { append, status, messages, setMessages, error } = useChat({
 		api: '/api/generateVocabulary'
 	});
+	let isLoading = $derived($status === 'streaming');
 </script>
 
 <Dialog.Root>
@@ -30,7 +31,7 @@
 				}
 			);
 		}}
-		disabled={$isLoading}
+		disabled={isLoading}
 	>
 		Generate
 	</Dialog.Trigger>
@@ -50,7 +51,7 @@
 		{#if $error}
 			<ErrorMessage message={$error.message} />
 		{/if}
-		{#if $isLoading}
+		{#if isLoading}
 			Loading...
 		{/if}
 	</Dialog.Content>

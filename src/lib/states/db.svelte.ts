@@ -1,4 +1,5 @@
 import { DuplicatedError } from "@/error";
+import type { Message } from "ai";
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -24,14 +25,22 @@ type Pattern = {
   explanation: string
 }
 
-type WithID<T extends Record<string, string>> = T & { id: string }
+
+type Chat = {
+  title: string,
+  description: string,
+  messages: Array<Pick<Message, "role" | "content" | "id">>
+}
+
+type WithID<T extends Record<string, unknown>> = T & { id: string }
 
 const prefixes = {
   vocabulary: "Vocabulary/",
   basic: "Basic/",
   check: "Check/",
   compare: "Compare/",
-  pattern: "Pattern/"
+  pattern: "Pattern/",
+  chat: "Chat/"
 } as const
 
 const mutators = {
@@ -135,25 +144,37 @@ const mutators = {
   },
   deletePattern: async (tx, key: string) => {
     await tx.del(`${prefixes.pattern}${key}`);
-  }
+  },
+  saveChat: async (tx, chat: WithID<Chat>) => {
+    await tx.set(`${prefixes.chat}${chat.id}`, chat);
+  },
+  deleteChat: async (tx, key: string) => {
+    await tx.del(`${prefixes.chat}${key}`);
+  },
+
 } satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
 
 type ReplicacheSpec = typeof mutators
 
-class DB {
+type IDB = {
+  [K in `${"save" | "delete" | "subscribe"}${Capitalize<keyof typeof prefixes>}`]: (...args: any[]) => void
+}
+
+class DB implements IDB {
   rep = $state<Replicache<ReplicacheSpec>>();
   vocabularies = $state<Array<WithID<Vocabulary>>>([]);
   basicTranslations = $state<Array<WithID<Translation>>>([]);
   checkTranslations = $state<Array<WithID<Translation>>>([]);
   compareTranslations = $state<Array<WithID<Compare>>>([]);
   patternTranslations = $state<Array<WithID<Pattern>>>([]);
+  chats = $state<Array<WithID<Chat>>>([]);
   init(userId: string) {
     const rep = new Replicache<ReplicacheSpec>({
       name: import.meta.env.DEV ? "Local Dev" : userId,
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators,
     });
-    import.meta.hot?.dispose(() => rep.close());
+    import.meta.hot?.dispose(() => rep.close())
     this.rep = rep;
   }
   // Vocabulary
@@ -171,7 +192,7 @@ class DB {
   deleteVocabulary(key: string) {
     this.rep?.mutate.deleteVocabulary(key)
   }
-  subscribeVocabularies() {
+  subscribeVocabulary() {
     return this.rep?.subscribe(
       async tx => (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray()) as Array<WithID<Vocabulary>>,
       {
@@ -279,6 +300,35 @@ class DB {
       {
         onData: (data) => {
           this.patternTranslations = data;
+        }
+      }
+    )
+  }
+  // Chat
+  async saveChat(chat: Chat, onSuccess: () => void) {
+    const id = uuidv4()
+    this.rep?.mutate.saveChat({
+      ...chat,
+      id
+    }).then(() => {
+      toast.success(`Chat is saved`)
+      onSuccess()
+    }).catch(() => {
+      toast.error(`Failed to save chat`)
+    })
+  }
+  updateChat(chat: WithID<Chat>) {
+    this.rep?.mutate.saveChat(chat)
+  }
+  deleteChat(key: string) {
+    return this.rep?.mutate.deleteChat(key)
+  }
+  subscribeChat() {
+    return this.rep?.subscribe(
+      async tx => (await tx.scan({ prefix: prefixes.chat }).values().toArray()) as Array<WithID<Chat>>,
+      {
+        onData: (data) => {
+          this.chats = data;
         }
       }
     )

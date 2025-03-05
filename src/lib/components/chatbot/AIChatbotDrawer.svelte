@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import * as Sheet from '$lib/components/ui/sheet';
+	import SaveConversationButton from '@/components/chatbot/saveChatButton.svelte';
 	import ClearInput from '@/components/clearInput.svelte';
 	import { Button, buttonVariants } from '@/components/ui/button';
 	import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,9 +10,9 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare } from 'lucide-svelte';
 	import { marked } from 'marked';
-	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
+	const { input, handleSubmit, messages, setMessages, status, stop } = useChat({
 		api: '/api/ai/chat',
-		onResponse: () => {
+		onFinish: () => {
 			const lastMessage = $messages.findLast((message) => message.role === 'user');
 			// find element by id
 			if (lastMessage) {
@@ -21,15 +22,23 @@
 			}
 		}
 	});
-	let abortController = new AbortController();
-	let openChat = $page.url.searchParams.get('chat') === 'true';
+	const isLoading = $derived($status === 'streaming');
+	const openChat = $derived(page.url.searchParams.get('chat') === 'true');
+	let abortController = $state(new AbortController());
+	const inputId = 'chat-input';
+	$effect(() => {
+		if (openChat) {
+			const inputElement = document.getElementById(inputId);
+			inputElement?.focus();
+		}
+	});
 </script>
 
 <Sheet.Root
 	open={openChat}
 	onOpenChange={(open) => {
 		if (open) {
-			const params = new URLSearchParams($page.url.search);
+			const params = new URLSearchParams(page.url.search);
 			params.set('chat', 'true');
 			goto(`?${params.toString()}`);
 			if (abortController.signal.aborted) {
@@ -47,7 +56,7 @@
 				}
 			);
 		} else {
-			const params = new URLSearchParams($page.url.search);
+			const params = new URLSearchParams(page.url.search);
 			params.delete('chat');
 			goto(`?${params.toString()}`);
 			abortController.abort();
@@ -79,38 +88,42 @@
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
 							}`}
 						>
-							{@html marked(message.content)}
+							{@html marked(message.content, {
+								breaks: true
+							})}
 						</span>
 					</div>
 				{/each}
-				{#if $isLoading}
+				{#if isLoading}
 					<div class="mb-4 text-left">
 						<span class="inline-block p-2 text-black"> loading... </span>
 					</div>
 					<div class="h-[80vh]"></div>
 				{/if}
-				<!-- TODO auto scroll bottom -->
 			</ScrollArea>
 			<div class="flex flex-col space-y-2">
 				<p class="text-sm text-muted-foreground hidden md:block">
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
 				<form
-					on:submit={(e) => {
+					onsubmit={(e) => {
 						handleSubmit(e);
 					}}
-					id="chat-bot"
 				>
 					<div class="flex gap-1 flex-col md:flex-row md:gap-2 md:items-end">
 						<div class="flex-1 relative">
 							<Textarea
 								bind:value={$input}
 								placeholder="Type your message..."
+								id={inputId}
 								on:keydown={(e) => {
 									if (e.isComposing || e.code !== 'Enter' || e.shiftKey) {
 										return;
 									}
 									if (window.innerWidth < 768) {
+										return;
+									}
+									if ($input.trim() === '') {
 										return;
 									}
 									e.stopPropagation();
@@ -130,7 +143,7 @@
 								disabled={!$input.trim()}
 								onclick={() => ($input = '')}>Clear</Button
 							>
-							{#if $isLoading}
+							{#if isLoading}
 								<Button
 									on:click={() => {
 										stop();
@@ -148,9 +161,15 @@
 									stop();
 									setMessages([]);
 								}}
+								disabled={$messages.length === 0}
 							>
 								New
 							</Button>
+							<SaveConversationButton
+								disabled={$messages.length === 0}
+								messages={$messages}
+								onSuccess={() => setMessages([])}
+							/>
 						</div>
 					</div>
 				</form>

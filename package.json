@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.5",
-    "@ai-sdk/svelte": "^1.1.7",
+    "@ai-sdk/svelte": "^1.1.20",
     "@libsql/kysely-libsql": "^0.4.1",
     "@sentry/sveltekit": "^8",
     "@tailwindcss/vite": "^4.0.0",

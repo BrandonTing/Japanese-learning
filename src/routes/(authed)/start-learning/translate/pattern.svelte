@@ -8,22 +8,22 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { Bookmark } from 'lucide-svelte';
-	let pattern = '';
-	let text = '';
-	const { messages, append, isLoading, stop, setMessages, error } = useChat({
+	import { toast } from 'svelte-sonner';
+	let pattern = $state('');
+	let text = $state('');
+	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	$: canSubmit = pattern.trim() && text.trim();
-	$: prompt = genPrompt(pattern, text);
-	$: canBookmark =
-		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
-	function genPrompt(pattern: string, text: string) {
-		return `
-      我會提供一個日文句子以及其中有出現的單詞，請協助翻譯這段話，並解釋該單詞或文法的意思：
-      單詞：${pattern}
-      ${text}
-    `;
-	}
+	let isLoading = $derived($status === 'streaming');
+	let canSubmit = $derived(Boolean(pattern.trim() && text.trim()));
+	let prompt = $derived(`
+    我會提供一個日文句子以及其中有出現的單詞，請協助翻譯這段話，並解釋該單詞或文法的意思：
+    單詞：${pattern.trim()}
+    ${text.trim()}
+  `);
+	let canBookmark = $derived(
+		prompt === $messages.findLast((message) => message.role === 'user')?.content && !isLoading
+	);
 </script>
 
 <div class="flex gap-4 flex-col px-1">
@@ -46,11 +46,15 @@
 			disabled={!text.trim()}
 			onclick={() => (text = '')}>Clear</Button
 		>
-		{#if $isLoading}
+		{#if isLoading}
 			<Button onclick={stop}>Stop</Button>
 		{:else}
 			<Button
 				onclick={() => {
+					if (!text.includes(pattern)) {
+						toast.warning('The pattern is not found in the sentence.');
+						return;
+					}
 					Sentry.startSpan(
 						{
 							name: 'Translate and Explain Grammer',
@@ -81,5 +85,5 @@
 			<Bookmark class="h-4 w-4" />
 		</Button>
 	</div>
-	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
+	<ContentBlock messages={$messages} {isLoading} error={$error}></ContentBlock>
 </div>
