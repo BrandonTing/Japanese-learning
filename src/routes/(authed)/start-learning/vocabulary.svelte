@@ -6,13 +6,15 @@
 	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import { Bookmark } from 'lucide-svelte';
-	let text = '';
-	let canBookmark = false;
-	const { messages, append, isLoading, stop, setMessages, error } = useChat({
+	let text = $state('');
+	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/vocabulary'
 	});
-	$: canBookmark =
-		text === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
+	const isLoading = $derived($status === 'streaming');
+	let canBookmark = $derived(
+		text === $messages.findLast((message) => message.role === 'user')?.content && !isLoading
+	);
+
 	function clear() {
 		text = '';
 	}
@@ -38,7 +40,7 @@
 			<Button variant="outline" class="block md:hidden" disabled={!text.trim()} onclick={clear}
 				>Clear</Button
 			>
-			{#if $isLoading}
+			{#if isLoading}
 				<Button onclick={stop}>Stop</Button>
 			{:else}
 				<Button
@@ -73,5 +75,5 @@
 			</Button>
 		</div>
 	</div>
-	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
+	<ContentBlock messages={$messages} {isLoading} error={$error}></ContentBlock>
 </div>

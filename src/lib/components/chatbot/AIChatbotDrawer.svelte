@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import SaveConversationButton from '@/components/chatbot/saveChatButton.svelte';
 	import ClearInput from '@/components/clearInput.svelte';
@@ -10,7 +10,7 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import { MessageSquare } from 'lucide-svelte';
 	import { marked } from 'marked';
-	const { input, handleSubmit, messages, setMessages, isLoading, stop } = useChat({
+	const { input, handleSubmit, messages, setMessages, status, stop } = useChat({
 		api: '/api/ai/chat',
 		onFinish: () => {
 			const lastMessage = $messages.findLast((message) => message.role === 'user');
@@ -22,20 +22,23 @@
 			}
 		}
 	});
-	let abortController = new AbortController();
-	$: openChat = $page.url.searchParams.get('chat') === 'true';
+	const isLoading = $derived($status === 'streaming');
+	const openChat = $derived(page.url.searchParams.get('chat') === 'true');
+	let abortController = $state(new AbortController());
 	const inputId = 'chat-input';
-	$: if (openChat) {
-		const inputElement = document.getElementById(inputId);
-		inputElement?.focus();
-	}
+	$effect(() => {
+		if (openChat) {
+			const inputElement = document.getElementById(inputId);
+			inputElement?.focus();
+		}
+	});
 </script>
 
 <Sheet.Root
 	open={openChat}
 	onOpenChange={(open) => {
 		if (open) {
-			const params = new URLSearchParams($page.url.search);
+			const params = new URLSearchParams(page.url.search);
 			params.set('chat', 'true');
 			goto(`?${params.toString()}`);
 			if (abortController.signal.aborted) {
@@ -53,7 +56,7 @@
 				}
 			);
 		} else {
-			const params = new URLSearchParams($page.url.search);
+			const params = new URLSearchParams(page.url.search);
 			params.delete('chat');
 			goto(`?${params.toString()}`);
 			abortController.abort();
@@ -89,7 +92,7 @@
 						</span>
 					</div>
 				{/each}
-				{#if $isLoading}
+				{#if isLoading}
 					<div class="mb-4 text-left">
 						<span class="inline-block p-2 text-black"> loading... </span>
 					</div>
@@ -102,7 +105,7 @@
 					Please create a new chat if the conversation topic has changed to preserve token usage.
 				</p>
 				<form
-					on:submit={(e) => {
+					onsubmit={(e) => {
 						handleSubmit(e);
 					}}
 					id="chat-bot"
@@ -137,7 +140,7 @@
 								disabled={!$input.trim()}
 								onclick={() => ($input = '')}>Clear</Button
 							>
-							{#if $isLoading}
+							{#if isLoading}
 								<Button
 									on:click={() => {
 										stop();

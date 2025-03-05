@@ -7,20 +7,22 @@
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
 	import { Bookmark } from 'lucide-svelte';
-	let targetMeaning = '';
-	let text = '';
-	const { messages, append, isLoading, stop, setMessages, error } = useChat({
+	let targetMeaning = $state('');
+	let text = $state('');
+	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	$: canSubmit = Boolean(targetMeaning.trim() && text.trim());
-	$: prompt = `
+	let isLoading = $derived($status === 'streaming');
+	let canSubmit = $derived(Boolean(targetMeaning.trim() && text.trim()));
+	let prompt = $derived(`
     以下我會附上兩個句子，第一個句子是我期望的意思，第二個句子是我目前的日文造句，
     請協助我確認第二個句子是否符合第一個句子的意思，若不符合，請解釋原因：
     - ${targetMeaning.trim()}
     - ${text.trim()}
-  `;
-	$: canBookmark =
-		prompt === $messages.findLast((message) => message.role === 'user')?.content && !$isLoading;
+  `);
+	let canBookmark = $derived(
+		prompt === $messages.findLast((message) => message.role === 'user')?.content && !isLoading
+	);
 </script>
 
 <div class="flex gap-4 flex-col px-1">
@@ -37,7 +39,6 @@
 			<ClearInput
 				clear={() => {
 					targetMeaning = '';
-					canSubmit = false;
 				}}
 				className="top-full -translate-y-6"
 			/>
@@ -49,7 +50,6 @@
 			<ClearInput
 				clear={() => {
 					text = '';
-					canSubmit = false;
 				}}
 				className="top-full -translate-y-6"
 			/>
@@ -65,7 +65,7 @@
 				targetMeaning = '';
 			}}>Clear</Button
 		>
-		{#if $isLoading}
+		{#if isLoading}
 			<Button onclick={stop}>Stop</Button>
 		{:else}
 			<Button
@@ -104,5 +104,5 @@
 			<Bookmark class="h-4 w-4" />
 		</Button>
 	</div>
-	<ContentBlock messages={$messages} isLoading={$isLoading} error={$error}></ContentBlock>
+	<ContentBlock messages={$messages} {isLoading} error={$error}></ContentBlock>
 </div>
