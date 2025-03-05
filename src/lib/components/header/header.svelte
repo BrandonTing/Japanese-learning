@@ -37,7 +37,6 @@
 		}
 	] as const;
 	const session = authClient.useSession();
-	let username = $derived($session.data?.user.name);
 </script>
 
 <header class="w-full bg-background border-b mb-8">

@@ -65,6 +65,7 @@
 							description: saveFormData.description,
 							messages: messages.map((message) => {
 								return {
+									id: message.id,
 									role: message.role,
 									content: message.content
 								};

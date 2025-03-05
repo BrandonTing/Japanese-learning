@@ -29,7 +29,7 @@ type Pattern = {
 type Chat = {
   title: string,
   description: string,
-  messages: Array<Pick<Message, "role" | "content">>
+  messages: Array<Pick<Message, "role" | "content" | "id">>
 }
 
 type WithID<T extends Record<string, unknown>> = T & { id: string }
@@ -145,16 +145,13 @@ const mutators = {
   deletePattern: async (tx, key: string) => {
     await tx.del(`${prefixes.pattern}${key}`);
   },
-  saveChat: async (tx, chat: Chat) => {
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.chat}${uuid}`, {
-      id: uuid,
-      ...chat
-    });
+  saveChat: async (tx, chat: WithID<Chat>) => {
+    await tx.set(`${prefixes.chat}${chat.id}`, chat);
   },
   deleteChat: async (tx, key: string) => {
     await tx.del(`${prefixes.chat}${key}`);
   },
+
 } satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
 
 type ReplicacheSpec = typeof mutators
@@ -309,15 +306,22 @@ class DB implements IDB {
   }
   // Chat
   async saveChat(chat: Chat, onSuccess: () => void) {
-    this.rep?.mutate.saveChat(chat).then(() => {
+    const id = uuidv4()
+    this.rep?.mutate.saveChat({
+      ...chat,
+      id
+    }).then(() => {
       toast.success(`Chat is saved`)
       onSuccess()
     }).catch(() => {
       toast.error(`Failed to save chat`)
     })
   }
+  updateChat(chat: WithID<Chat>) {
+    this.rep?.mutate.saveChat(chat)
+  }
   deleteChat(key: string) {
-    this.rep?.mutate.deleteChat(key)
+    return this.rep?.mutate.deleteChat(key)
   }
   subscribeChat() {
     return this.rep?.subscribe(

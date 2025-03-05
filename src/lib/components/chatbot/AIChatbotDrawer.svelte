@@ -88,7 +88,9 @@
 								message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
 							}`}
 						>
-							{@html marked(message.content)}
+							{@html marked(message.content, {
+								breaks: true
+							})}
 						</span>
 					</div>
 				{/each}
@@ -98,7 +100,6 @@
 					</div>
 					<div class="h-[80vh]"></div>
 				{/if}
-				<!-- TODO auto scroll bottom -->
 			</ScrollArea>
 			<div class="flex flex-col space-y-2">
 				<p class="text-sm text-muted-foreground hidden md:block">
@@ -108,7 +109,6 @@
 					onsubmit={(e) => {
 						handleSubmit(e);
 					}}
-					id="chat-bot"
 				>
 					<div class="flex gap-1 flex-col md:flex-row md:gap-2 md:items-end">
 						<div class="flex-1 relative">
@@ -121,6 +121,9 @@
 										return;
 									}
 									if (window.innerWidth < 768) {
+										return;
+									}
+									if ($input.trim() === '') {
 										return;
 									}
 									e.stopPropagation();

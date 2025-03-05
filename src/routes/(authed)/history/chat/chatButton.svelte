@@ -22,7 +22,10 @@
 	<Tooltip.Trigger>
 		<Button
 			variant="ghost"
-			class={cn('relative justify-start hover:bg-transparent w-full', isActive ? '' : 'hover:underline')}
+			class={cn(
+				'relative justify-start hover:bg-transparent w-full',
+				isActive ? '' : 'hover:underline'
+			)}
 			onclick={onSelect}
 		>
 			{#if isActive}
@@ -41,6 +44,8 @@
 	<Tooltip.Content class="flex flex-col gap-1">
 		<p class="font-bold">{title}</p>
 		<Separator />
-		<p>{description}</p>
+		{#each description.split('\n') as line}
+			<p class="text-muted-foreground">{line}</p>
+		{/each}
 	</Tooltip.Content>
 </Tooltip.Root>
