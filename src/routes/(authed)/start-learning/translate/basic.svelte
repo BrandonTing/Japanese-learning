@@ -11,7 +11,7 @@
 	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	let isLoading = $derived($status === 'streaming');
+	let isLoading = $derived($status === 'streaming' || $status === 'submitted');
 	let prompt = $derived(`
       請協助我翻譯以下句子，並整理其中用到之JLPT N3等級以上的特殊文法，最多三筆：
       ${text.trim()}

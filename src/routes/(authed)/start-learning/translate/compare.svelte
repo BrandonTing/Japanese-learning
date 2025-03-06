@@ -12,7 +12,7 @@
 	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
-	let isLoading = $derived($status === 'streaming');
+	let isLoading = $derived($status === 'streaming' || $status === 'submitted');
 	let canSubmit = $derived(Boolean(targetMeaning.trim() && text.trim()));
 	let prompt = $derived(`
     以下我會附上兩個句子，第一個句子是我期望的意思，第二個句子是我目前的日文造句，
