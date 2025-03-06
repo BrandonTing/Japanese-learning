@@ -10,7 +10,7 @@
 	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/vocabulary'
 	});
-	const isLoading = $derived($status === 'streaming');
+	let isLoading = $derived($status === 'streaming' || $status === 'submitted');
 	let canBookmark = $derived(
 		text === $messages.findLast((message) => message.role === 'user')?.content && !isLoading
 	);
