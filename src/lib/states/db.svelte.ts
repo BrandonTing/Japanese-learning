@@ -173,6 +173,7 @@ class DB implements IDB {
       name: import.meta.env.DEV ? "Local Dev" : userId,
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators,
+      pushURL: '/api/push',
     });
     import.meta.hot?.dispose(() => rep.close())
     this.rep = rep;
