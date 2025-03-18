@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1742203949166,
+      "tag": "0000_broken_starhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1742262347079,
+      "tag": "0001_flaky_romulus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1742266089611,
+      "tag": "0002_panoramic_omega_flight",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1742267092658,
+      "tag": "0003_peaceful_union_jack",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1742269879344,
+      "tag": "0004_nappy_zeigeist",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1742270394986,
+      "tag": "0005_little_nebula",
+      "breakpoints": true
+    }
+  ]
+}

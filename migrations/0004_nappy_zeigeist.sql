@@ -1,0 +1,1 @@
+ALTER TABLE `message` ADD `chat_id` text NOT NULL;

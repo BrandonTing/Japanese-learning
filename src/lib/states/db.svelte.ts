@@ -3,38 +3,38 @@ import type { Message } from "ai";
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
 import { v4 as uuidv4 } from "uuid";
-type Vocabulary = {
+export type Vocabulary = WithID<{
   vocabulary: string,
   explanation: string
-}
+}>
 
-type Translation = {
+export type Translation = WithID<{
   sentence: string,
   explanation: string
-}
+}>
 
-type Compare = {
+export type Compare = WithID<{
   targetSentence: string,
   sentence: string,
   explanation: string
-}
+}>
 
-type Pattern = {
+export type Pattern = WithID<{
   pattern: string,
   sentence: string,
   explanation: string
-}
+}>
 
-
-type Chat = {
+export type Chat = WithID<{
   title: string,
   description: string,
   messages: Array<Pick<Message, "role" | "content" | "id">>
-}
+}>
 
 type WithID<T extends Record<string, unknown>> = T & { id: string }
+type ExcludeID<T> = Omit<T, "id">
 
-const prefixes = {
+export const prefixes = {
   vocabulary: "Vocabulary/",
   basic: "Basic/",
   check: "Check/",
@@ -47,15 +47,15 @@ const mutators = {
   // Vocabulary
   saveVocabulary: async (tx, {
     vocabulary,
-    explanation
+    explanation,
+    id
   }: Vocabulary) => {
-    const existed = (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray() as Array<WithID<Vocabulary>>).find(v => v.vocabulary === vocabulary);
+    const existed = (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray() as Array<Vocabulary>).find(v => v.vocabulary === vocabulary);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.vocabulary}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.vocabulary}${id}`, {
+      id,
       vocabulary,
       explanation
     });
@@ -66,15 +66,15 @@ const mutators = {
   // Basic
   saveBasic: async (tx, {
     sentence,
-    explanation
+    explanation,
+    id
   }: Translation) => {
-    const existed = (await tx.scan({ prefix: prefixes.basic }).values().toArray() as Array<WithID<Translation>>).find(v => v.sentence === sentence);
+    const existed = (await tx.scan({ prefix: prefixes.basic }).values().toArray() as Array<Translation>).find(v => v.sentence === sentence);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.basic}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.basic}${id}`, {
+      id,
       sentence,
       explanation
     });
@@ -85,15 +85,15 @@ const mutators = {
   // Check
   saveCheck: async (tx, {
     sentence,
-    explanation
+    explanation,
+    id
   }: Translation) => {
     const existed = (await tx.scan({ prefix: prefixes.check }).values().toArray() as Array<WithID<Translation>>).find(v => v.sentence === sentence);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.check}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.check}${id}`, {
+      id,
       sentence,
       explanation
     });
@@ -105,16 +105,16 @@ const mutators = {
   saveCompare: async (tx, {
     sentence,
     targetSentence,
-    explanation
+    explanation,
+    id
   }: Compare) => {
     const existed = (await tx.scan({ prefix: prefixes.check }).values().toArray() as Array<WithID<Compare>>)
       .find(v => v.sentence === sentence && v.targetSentence === targetSentence);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.compare}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.compare}${id}`, {
+      id,
       sentence,
       targetSentence,
       explanation
@@ -127,16 +127,16 @@ const mutators = {
   savePattern: async (tx, {
     sentence,
     pattern,
-    explanation
+    explanation,
+    id
   }: Pattern) => {
     const existed = (await tx.scan({ prefix: prefixes.pattern }).values().toArray() as Array<WithID<Pattern>>)
       .find(v => v.sentence === sentence && v.pattern === pattern);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.pattern}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.pattern}${id}`, {
+      id,
       sentence,
       pattern,
       explanation
@@ -153,6 +153,8 @@ const mutators = {
   },
 
 } satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
+
+export type Mutators = keyof typeof mutators
 
 type ReplicacheSpec = typeof mutators
 
@@ -173,13 +175,19 @@ class DB implements IDB {
       name: import.meta.env.DEV ? "Local Dev" : userId,
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators,
+      pushURL: '/api/push',
+      pullURL: `/api/pull`,
     });
     import.meta.hot?.dispose(() => rep.close())
     this.rep = rep;
   }
   // Vocabulary
-  saveVocabulary(vocabulary: Vocabulary) {
-    this.rep?.mutate.saveVocabulary(vocabulary).then(() => {
+  saveVocabulary(vocabulary: ExcludeID<Vocabulary>) {
+    const uuid = uuidv4();
+    this.rep?.mutate.saveVocabulary({
+      ...vocabulary,
+      id: uuid
+    }).then(() => {
       toast.success(`Explanation of ${vocabulary.vocabulary} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -203,8 +211,12 @@ class DB implements IDB {
     )
   }
   // Basic
-  saveBasic(translation: Translation) {
-    this.rep?.mutate.saveBasic(translation).then(() => {
+  saveBasic(translation: ExcludeID<Translation>) {
+    const uuid = uuidv4();
+    this.rep?.mutate.saveBasic({
+      ...translation,
+      id: uuid
+    }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(translation.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -228,8 +240,9 @@ class DB implements IDB {
     )
   }
   // Check
-  saveCheck(translation: Translation) {
-    this.rep?.mutate.saveCheck(translation).then(() => {
+  saveCheck(translation: ExcludeID<Translation>) {
+    const id = uuidv4();
+    this.rep?.mutate.saveCheck({ ...translation, id }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(translation.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -254,8 +267,12 @@ class DB implements IDB {
   }
 
   // Compare
-  saveCompare(compare: Compare) {
-    this.rep?.mutate.saveCompare(compare).then(() => {
+  saveCompare(compare: ExcludeID<Compare>) {
+    const id = uuidv4();
+    this.rep?.mutate.saveCompare({
+      ...compare,
+      id
+    }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(compare.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -280,8 +297,9 @@ class DB implements IDB {
   }
 
   // Pattern
-  savePattern(pattern: Pattern) {
-    this.rep?.mutate.savePattern(pattern).then(() => {
+  savePattern(pattern: ExcludeID<Pattern>) {
+    const id = uuidv4();
+    this.rep?.mutate.savePattern({ ...pattern, id }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(pattern.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -305,7 +323,7 @@ class DB implements IDB {
     )
   }
   // Chat
-  async saveChat(chat: Chat, onSuccess: () => void) {
+  async saveChat(chat: ExcludeID<Chat>, onSuccess: () => void) {
     const id = uuidv4()
     this.rep?.mutate.saveChat({
       ...chat,
