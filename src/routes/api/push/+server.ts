@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { db, type Transaction } from '@/db/db';
-import { replicacheClient, replicacheServer, vocabulary } from '@/db/schema';
-import type { Mutators, Vocabulary, WithID } from '@/states/db.svelte';
+import { basicTranslation, chat, checkTranslation, compareTranslation, message, patternTranslation, replicacheClient, replicacheServer, vocabulary } from '@/db/schema';
+import type { Chat, Compare, Mutators, Pattern, Translation, Vocabulary } from '@/states/db.svelte';
 import { eq } from 'drizzle-orm';
 import type { MutationV1, PushRequestV1 } from 'replicache';
 import type { RequestHandler } from './$types';
@@ -107,11 +107,40 @@ async function processMutation(
   // mutation.
   switch (mutation.name as Mutators) {
     case "saveVocabulary":
-      await createVocabulary(t, mutation.args as WithID<Vocabulary>, userId, nextVersion);
+      await createVocabulary(t, mutation.args as Vocabulary, userId, nextVersion);
       break;
     case "deleteVocabulary":
-      // TODO
       await deleteVocabulary(t, mutation.args as string, nextVersion);
+      break;
+    case "saveBasic":
+      await createBasic(t, mutation.args as Translation, userId, nextVersion);
+      break;
+    case "deleteBasic":
+      await deleteBasic(t, mutation.args as string, nextVersion);
+      break;
+    case "saveCheck":
+      await createCheck(t, mutation.args as Translation, userId, nextVersion);
+      break;
+    case "deleteCheck":
+      await deleteCheck(t, mutation.args as string, nextVersion);
+      break;
+    case "saveCompare":
+      await createCompare(t, mutation.args as Compare, userId, nextVersion);
+      break;
+    case "deleteCompare":
+      await deleteCompare(t, mutation.args as string, nextVersion);
+      break;
+    case "savePattern":
+      await createPattern(t, mutation.args as Pattern, userId, nextVersion);
+      break;
+    case "deletePattern":
+      await deletePattern(t, mutation.args as string, nextVersion);
+      break;
+    case "saveChat":
+      await createChat(t, mutation.args as Chat, userId, nextVersion);
+      break;
+    case "deleteChat":
+      await deleteChat(t, mutation.args as string, nextVersion);
       break;
     default:
       throw new Error(`Unknown mutation: ${mutation.name}`);
@@ -158,8 +187,6 @@ async function setLastMutationID(
     lastMutationID: mutationID,
     clientVersion: version,
   }).where(eq(replicacheClient.id, clientID));
-  console.log('setLastMutationID', result);
-  console.log('clientID', clientID);
   if (result.rowsAffected === 0) {
     await t.insert(replicacheClient).values({
       id: clientID,
@@ -172,7 +199,7 @@ async function setLastMutationID(
 
 async function createVocabulary(
   t: Transaction,
-  value: WithID<Vocabulary>,
+  value: Vocabulary,
   userId: string,
   version: number,
 ) {
@@ -195,6 +222,157 @@ async function deleteVocabulary(
   }).where(eq(vocabulary.id, value));
 }
 
+async function createBasic(
+  t: Transaction,
+  value: Translation,
+  userId: string,
+  version: number,
+) {
+  await t.insert(basicTranslation).values({
+    id: value.id,
+    sentence: value.sentence,
+    explanation: value.explanation,
+    userId,
+    version,
+  });
+}
+async function deleteBasic(
+  t: Transaction,
+  value: string,
+  version: number,
+) {
+  await t.update(basicTranslation).set({
+    isDeleted: 1,
+    version,
+  }).where(eq(vocabulary.id, value));
+}
+
+async function createCheck(
+  t: Transaction,
+  value: Translation,
+  userId: string,
+  version: number,
+) {
+  await t.insert(checkTranslation).values({
+    id: value.id,
+    sentence: value.sentence,
+    explanation: value.explanation,
+    userId,
+    version,
+  });
+}
+async function deleteCheck(
+  t: Transaction,
+  value: string,
+  version: number,
+) {
+  await t.update(checkTranslation).set({
+    isDeleted: 1,
+    version,
+  }).where(eq(vocabulary.id, value));
+}
+
+async function createCompare(
+  t: Transaction,
+  value: Compare,
+  userId: string,
+  version: number,
+) {
+  await t.insert(compareTranslation).values({
+    id: value.id,
+    sentence: value.sentence,
+    targetSentence: value.targetSentence,
+    explanation: value.explanation,
+    userId,
+    version,
+  });
+}
+async function deleteCompare(
+  t: Transaction,
+  value: string,
+  version: number,
+) {
+  await t.update(compareTranslation).set({
+    isDeleted: 1,
+    version,
+  }).where(eq(vocabulary.id, value));
+}
+
+async function createPattern(
+  t: Transaction,
+  value: Pattern,
+  userId: string,
+  version: number,
+) {
+  await t.insert(patternTranslation).values({
+    id: value.id,
+    sentence: value.sentence,
+    pattern: value.pattern,
+    explanation: value.explanation,
+    userId,
+    version,
+  });
+}
+async function deletePattern(
+  t: Transaction,
+  value: string,
+  version: number,
+) {
+  await t.update(patternTranslation).set({
+    isDeleted: 1,
+    version,
+  }).where(eq(vocabulary.id, value));
+}
+
+async function createChat(
+  t: Transaction,
+  value: Chat,
+  userId: string,
+  version: number,
+) {
+  const exist = await t.query.chat.findFirst({
+    where: eq(chat.id, value.id),
+    with: {
+      messages: true,
+    }
+  });
+  if (exist) {
+    const existedMessages = exist.messages
+    const newMessages = value.messages.filter(m => !existedMessages.find(em => em.id === m.id))
+    await t.insert(message).values(newMessages.map(m => ({
+      id: m.id,
+      chatId: value.id,
+      content: m.content,
+      role: m.role,
+    })));
+
+    return;
+  }
+  await t.insert(chat).values({
+    id: value.id,
+    title: value.title,
+    description: value.description,
+    userId,
+    version,
+  });
+  await t.insert(message).values(value.messages.map(m => ({
+    id: m.id,
+    chatId: value.id,
+    content: m.content,
+    role: m.role,
+  })));
+};
+
+async function deleteChat(
+  t: Transaction,
+  value: string,
+  version: number,
+) {
+  await t.update(chat).set({
+    isDeleted: 1,
+    version,
+  }).where(eq(vocabulary.id, value));
+}
 async function sendPoke() {
   // TODO
 }

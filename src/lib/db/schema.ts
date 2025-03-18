@@ -1,4 +1,4 @@
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm'
+import { relations, type InferInsertModel, type InferSelectModel } from 'drizzle-orm'
 import {
   int,
   integer,
@@ -101,8 +101,16 @@ export const message = sqliteTable('message', {
   id: text('id').primaryKey().notNull(),
   role: text('role').notNull(),
   content: text('content').notNull(),
+  chatId: text('chat_id').notNull().references(() => chat.id),
 })
 
 export type Message = InferSelectModel<typeof message>
 export type InsertMessage = InferInsertModel<typeof message>
 
+export const chatRelations = relations(chat, ({ many }) => ({
+  messages: many(message),
+}));
+
+export const messageRelations = relations(message, ({ one }) => ({
+  chat: one(chat, { fields: [message.chatId], references: [chat.id] }),
+}));

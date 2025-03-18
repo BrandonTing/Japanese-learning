@@ -8,30 +8,31 @@ export type Vocabulary = WithID<{
   explanation: string
 }>
 
-export type Translation = {
+export type Translation = WithID<{
   sentence: string,
   explanation: string
-}
+}>
 
-export type Compare = {
+export type Compare = WithID<{
   targetSentence: string,
   sentence: string,
   explanation: string
-}
+}>
 
-export type Pattern = {
+export type Pattern = WithID<{
   pattern: string,
   sentence: string,
   explanation: string
-}
+}>
 
-export type Chat = {
+export type Chat = WithID<{
   title: string,
   description: string,
   messages: Array<Pick<Message, "role" | "content" | "id">>
-}
+}>
 
-export type WithID<T extends Record<string, unknown>> = T & { id: string }
+type WithID<T extends Record<string, unknown>> = T & { id: string }
+type ExcludeID<T> = Omit<T, "id">
 
 const prefixes = {
   vocabulary: "Vocabulary/",
@@ -65,15 +66,15 @@ const mutators = {
   // Basic
   saveBasic: async (tx, {
     sentence,
-    explanation
+    explanation,
+    id
   }: Translation) => {
-    const existed = (await tx.scan({ prefix: prefixes.basic }).values().toArray() as Array<WithID<Translation>>).find(v => v.sentence === sentence);
+    const existed = (await tx.scan({ prefix: prefixes.basic }).values().toArray() as Array<Translation>).find(v => v.sentence === sentence);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.basic}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.basic}${id}`, {
+      id,
       sentence,
       explanation
     });
@@ -84,15 +85,15 @@ const mutators = {
   // Check
   saveCheck: async (tx, {
     sentence,
-    explanation
+    explanation,
+    id
   }: Translation) => {
     const existed = (await tx.scan({ prefix: prefixes.check }).values().toArray() as Array<WithID<Translation>>).find(v => v.sentence === sentence);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.check}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.check}${id}`, {
+      id,
       sentence,
       explanation
     });
@@ -104,16 +105,16 @@ const mutators = {
   saveCompare: async (tx, {
     sentence,
     targetSentence,
-    explanation
+    explanation,
+    id
   }: Compare) => {
     const existed = (await tx.scan({ prefix: prefixes.check }).values().toArray() as Array<WithID<Compare>>)
       .find(v => v.sentence === sentence && v.targetSentence === targetSentence);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.compare}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.compare}${id}`, {
+      id,
       sentence,
       targetSentence,
       explanation
@@ -126,16 +127,16 @@ const mutators = {
   savePattern: async (tx, {
     sentence,
     pattern,
-    explanation
+    explanation,
+    id
   }: Pattern) => {
     const existed = (await tx.scan({ prefix: prefixes.pattern }).values().toArray() as Array<WithID<Pattern>>)
       .find(v => v.sentence === sentence && v.pattern === pattern);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.pattern}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.pattern}${id}`, {
+      id,
       sentence,
       pattern,
       explanation
@@ -180,7 +181,7 @@ class DB implements IDB {
     this.rep = rep;
   }
   // Vocabulary
-  saveVocabulary(vocabulary: Omit<Vocabulary, "id">) {
+  saveVocabulary(vocabulary: ExcludeID<Vocabulary>) {
     const uuid = uuidv4();
     this.rep?.mutate.saveVocabulary({
       ...vocabulary,
@@ -209,8 +210,12 @@ class DB implements IDB {
     )
   }
   // Basic
-  saveBasic(translation: Translation) {
-    this.rep?.mutate.saveBasic(translation).then(() => {
+  saveBasic(translation: ExcludeID<Translation>) {
+    const uuid = uuidv4();
+    this.rep?.mutate.saveBasic({
+      ...translation,
+      id: uuid
+    }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(translation.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -234,8 +239,9 @@ class DB implements IDB {
     )
   }
   // Check
-  saveCheck(translation: Translation) {
-    this.rep?.mutate.saveCheck(translation).then(() => {
+  saveCheck(translation: ExcludeID<Translation>) {
+    const id = uuidv4();
+    this.rep?.mutate.saveCheck({ ...translation, id }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(translation.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -260,8 +266,12 @@ class DB implements IDB {
   }
 
   // Compare
-  saveCompare(compare: Compare) {
-    this.rep?.mutate.saveCompare(compare).then(() => {
+  saveCompare(compare: ExcludeID<Compare>) {
+    const id = uuidv4();
+    this.rep?.mutate.saveCompare({
+      ...compare,
+      id
+    }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(compare.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -286,8 +296,9 @@ class DB implements IDB {
   }
 
   // Pattern
-  savePattern(pattern: Pattern) {
-    this.rep?.mutate.savePattern(pattern).then(() => {
+  savePattern(pattern: ExcludeID<Pattern>) {
+    const id = uuidv4();
+    this.rep?.mutate.savePattern({ ...pattern, id }).then(() => {
       toast.success(`Explanation of ${this.#truncateSentence(pattern.sentence)} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
@@ -311,7 +322,7 @@ class DB implements IDB {
     )
   }
   // Chat
-  async saveChat(chat: Chat, onSuccess: () => void) {
+  async saveChat(chat: ExcludeID<Chat>, onSuccess: () => void) {
     const id = uuidv4()
     this.rep?.mutate.saveChat({
       ...chat,
