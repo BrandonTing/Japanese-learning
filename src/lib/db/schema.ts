@@ -2,7 +2,7 @@ import type { InferInsertModel, InferSelectModel } from 'drizzle-orm'
 import {
   int,
   integer,
-  sqliteTable, text
+  sqliteTable, text,
 } from 'drizzle-orm/sqlite-core'
 
 export const replicacheServer = sqliteTable('replicache_server', {
@@ -26,8 +26,10 @@ export type InsertReplicacheClient = InferInsertModel<typeof replicacheClient>
 export const vocabulary = sqliteTable('vocabulary', {
   id: text('id').primaryKey().notNull(),
   vocabulary: text('vocabulary').notNull(),
-  explanation: integer('explanation').notNull(),
+  explanation: text('explanation').notNull(),
   version: integer('version').notNull(),
+  isDeleted: int("is_deleted").notNull().default(0),
+  userId: text('user_id').notNull(),
 })
 
 export type Vocabulary = InferSelectModel<typeof vocabulary>
@@ -36,8 +38,10 @@ export type InsertVocabulary = InferInsertModel<typeof vocabulary>
 export const basicTranslation = sqliteTable('basic_vocabulary', {
   id: text('id').primaryKey().notNull(),
   sentence: text('sentence').notNull(),
-  explanation: integer('explanation').notNull(),
+  explanation: text('explanation').notNull(),
   version: integer('version').notNull(),
+  isDeleted: int("is_deleted").notNull().default(0),
+  userId: text('user_id').notNull(),
 })
 
 export type BasicTranslation = InferSelectModel<typeof basicTranslation>
@@ -46,8 +50,10 @@ export type InsertBasicTranslation = InferInsertModel<typeof basicTranslation>
 export const checkTranslation = sqliteTable('check_vocabulary', {
   id: text('id').primaryKey().notNull(),
   sentence: text('sentence').notNull(),
-  explanation: integer('explanation').notNull(),
+  explanation: text('explanation').notNull(),
   version: integer('version').notNull(),
+  isDeleted: int("is_deleted").notNull().default(0),
+  userId: text('user_id').notNull(),
 })
 
 export type CheckTranslation = InferSelectModel<typeof checkTranslation>
@@ -57,8 +63,10 @@ export const compareTranslation = sqliteTable('compare_vocabulary', {
   id: text('id').primaryKey().notNull(),
   targetSentence: text('target_sentence').notNull(),
   sentence: text('sentence').notNull(),
-  explanation: integer('explanation').notNull(),
+  explanation: text('explanation').notNull(),
   version: integer('version').notNull(),
+  isDeleted: int("is_deleted").notNull().default(0),
+  userId: text('user_id').notNull(),
 })
 
 export type CompareTranslation = InferSelectModel<typeof compareTranslation>
@@ -68,8 +76,10 @@ export const patternTranslation = sqliteTable('pattern_vocabulary', {
   id: text('id').primaryKey().notNull(),
   pattern: text('pattern').notNull(),
   sentence: text('sentence').notNull(),
-  explanation: integer('explanation').notNull(),
+  explanation: text('explanation').notNull(),
   version: integer('version').notNull(),
+  isDeleted: int("is_deleted").notNull().default(0),
+  userId: text('user_id').notNull(),
 })
 
 export type PatternTranslation = InferSelectModel<typeof patternTranslation>
@@ -79,6 +89,9 @@ export const chat = sqliteTable('chat', {
   id: text('id').primaryKey().notNull(),
   title: text('pattern').notNull(),
   description: text('sentence').notNull(),
+  version: integer('version').notNull(),
+  isDeleted: int("is_deleted").notNull().default(0),
+  userId: text('user_id').notNull(),
 })
 
 export type Chat = InferSelectModel<typeof chat>

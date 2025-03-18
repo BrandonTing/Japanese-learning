@@ -1,5 +1,7 @@
+import { auth } from '@/auth';
 import { db, type Transaction } from '@/db/db';
-import { replicacheClient, replicacheServer } from '@/db/schema';
+import { replicacheClient, replicacheServer, vocabulary } from '@/db/schema';
+import type { Mutators, Vocabulary, WithID } from '@/states/db.svelte';
 import { eq } from 'drizzle-orm';
 import type { MutationV1, PushRequestV1 } from 'replicache';
 import type { RequestHandler } from './$types';
@@ -12,7 +14,13 @@ export const POST = (({ request, }) => {
 async function push(req: Request) {
   const data: PushRequestV1 = await req.json();
   console.log('Processing push', JSON.stringify(data));
-
+  const userId = (await auth.api.getSession({
+    headers: req.headers
+  }))?.user.id
+  console.log('userId', userId);
+  if (!userId) {
+    return
+  }
   const t0 = Date.now();
   try {
     // Iterate each mutation in the push.
@@ -20,7 +28,7 @@ async function push(req: Request) {
       const t1 = Date.now();
 
       try {
-        await db.transaction(t => processMutation(t, data.clientGroupID, mutation));
+        await db.transaction(t => processMutation(t, data.clientGroupID, mutation, userId));
       } catch (e) {
         console.error('Caught error from mutation', mutation, e);
 
@@ -48,7 +56,7 @@ async function processMutation(
   t: Transaction,
   clientGroupID: string,
   mutation: MutationV1,
-  error?: string | undefined,
+  userId: string,
 ) {
   const { clientID } = mutation;
 
@@ -88,26 +96,25 @@ async function processMutation(
     );
   }
 
-  if (error === undefined) {
-    console.log('Processing mutation:', JSON.stringify(mutation));
-
-    // For each possible mutation, run the server-side logic to apply the
-    // mutation.
-    switch (mutation.name) {
-      case 'createMessage':
-        await createMessage(t, mutation.args as MessageWithID, nextVersion);
-        break;
-      default:
-        throw new Error(`Unknown mutation: ${mutation.name}`);
-    }
-  } else {
-    // TODO: You can store state here in the database to return to clients to
-    // provide additional info about errors.
-    // console.log(
-    //   'Handling error from mutation',
-    //   JSON.stringify(mutation),
-    //   error,
-    // );
+  console.log('Processing mutation:', JSON.stringify(mutation));
+  if (!mutation.args) {
+    throw new Error('Mutation args can not be null');
+  }
+  if (!userId) {
+    throw new Error('No user id found')
+  }
+  // For each possible mutation, run the server-side logic to apply the
+  // mutation.
+  switch (mutation.name as Mutators) {
+    case "saveVocabulary":
+      await createVocabulary(t, mutation.args as WithID<Vocabulary>, userId, nextVersion);
+      break;
+    case "deleteVocabulary":
+      // TODO
+      await deleteVocabulary(t, mutation.args as string, nextVersion);
+      break;
+    default:
+      throw new Error(`Unknown mutation: ${mutation.name}`);
   }
 
   console.log('setting', clientID, 'last_mutation_id to', nextMutationID);
@@ -151,7 +158,9 @@ async function setLastMutationID(
     lastMutationID: mutationID,
     clientVersion: version,
   }).where(eq(replicacheClient.id, clientID));
-  if (result.rows.length === 0) {
+  console.log('setLastMutationID', result);
+  console.log('clientID', clientID);
+  if (result.rowsAffected === 0) {
     await t.insert(replicacheClient).values({
       id: clientID,
       clientGroupID,
@@ -161,17 +170,29 @@ async function setLastMutationID(
   }
 }
 
-async function createMessage(
+async function createVocabulary(
   t: Transaction,
-  { id, from, content, order }: MessageWithID,
+  value: WithID<Vocabulary>,
+  userId: string,
   version: number,
 ) {
-  await t.none(
-    `insert into message (
-    id, sender, content, ord, deleted, version) values
-    ($1, $2, $3, $4, false, $5)`,
-    [id, from, content, order, version],
-  );
+  await t.insert(vocabulary).values({
+    id: value.id,
+    vocabulary: value.vocabulary,
+    explanation: value.explanation,
+    userId,
+    version,
+  });
+}
+async function deleteVocabulary(
+  t: Transaction,
+  value: string,
+  version: number,
+) {
+  await t.update(vocabulary).set({
+    isDeleted: 1,
+    version,
+  }).where(eq(vocabulary.id, value));
 }
 
 async function sendPoke() {

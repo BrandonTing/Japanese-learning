@@ -3,36 +3,35 @@ import type { Message } from "ai";
 import { Replicache, type WriteTransaction } from "replicache";
 import { toast } from "svelte-sonner";
 import { v4 as uuidv4 } from "uuid";
-type Vocabulary = {
+export type Vocabulary = WithID<{
   vocabulary: string,
   explanation: string
-}
+}>
 
-type Translation = {
+export type Translation = {
   sentence: string,
   explanation: string
 }
 
-type Compare = {
+export type Compare = {
   targetSentence: string,
   sentence: string,
   explanation: string
 }
 
-type Pattern = {
+export type Pattern = {
   pattern: string,
   sentence: string,
   explanation: string
 }
 
-
-type Chat = {
+export type Chat = {
   title: string,
   description: string,
   messages: Array<Pick<Message, "role" | "content" | "id">>
 }
 
-type WithID<T extends Record<string, unknown>> = T & { id: string }
+export type WithID<T extends Record<string, unknown>> = T & { id: string }
 
 const prefixes = {
   vocabulary: "Vocabulary/",
@@ -47,15 +46,15 @@ const mutators = {
   // Vocabulary
   saveVocabulary: async (tx, {
     vocabulary,
-    explanation
+    explanation,
+    id
   }: Vocabulary) => {
-    const existed = (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray() as Array<WithID<Vocabulary>>).find(v => v.vocabulary === vocabulary);
+    const existed = (await tx.scan({ prefix: prefixes.vocabulary }).values().toArray() as Array<Vocabulary>).find(v => v.vocabulary === vocabulary);
     if (existed) {
       throw new DuplicatedError()
     }
-    const uuid = uuidv4();
-    await tx.set(`${prefixes.vocabulary}${uuid}`, {
-      id: uuid,
+    await tx.set(`${prefixes.vocabulary}${id}`, {
+      id,
       vocabulary,
       explanation
     });
@@ -154,6 +153,8 @@ const mutators = {
 
 } satisfies Record<`${"save" | "delete"}${Capitalize<keyof typeof prefixes>}`, (tx: WriteTransaction, ...args: any[]) => Promise<void>>
 
+export type Mutators = keyof typeof mutators
+
 type ReplicacheSpec = typeof mutators
 
 type IDB = {
@@ -179,8 +180,12 @@ class DB implements IDB {
     this.rep = rep;
   }
   // Vocabulary
-  saveVocabulary(vocabulary: Vocabulary) {
-    this.rep?.mutate.saveVocabulary(vocabulary).then(() => {
+  saveVocabulary(vocabulary: Omit<Vocabulary, "id">) {
+    const uuid = uuidv4();
+    this.rep?.mutate.saveVocabulary({
+      ...vocabulary,
+      id: uuid
+    }).then(() => {
       toast.success(`Explanation of ${vocabulary.vocabulary} is saved`)
     }).catch((e) => {
       if (e instanceof DuplicatedError) {
