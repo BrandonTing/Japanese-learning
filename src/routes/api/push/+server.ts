@@ -1,5 +1,5 @@
 import { auth } from '@/auth';
-import { db, type Transaction } from '@/db/db';
+import { db } from '@/db/db';
 import { basicTranslation, chat, checkTranslation, compareTranslation, message, patternTranslation, replicacheClient, replicacheServer, vocabulary } from '@/db/schema';
 import type { Chat, Compare, Mutators, Pattern, Translation, Vocabulary } from '@/states/db.svelte';
 import { eq } from 'drizzle-orm';
@@ -28,7 +28,7 @@ async function push(req: Request) {
       const t1 = Date.now();
 
       try {
-        await db.transaction(t => processMutation(t, data.clientGroupID, mutation, userId));
+        await processMutation(data.clientGroupID, mutation, userId)
       } catch (e) {
         console.error('Caught error from mutation', mutation, e);
 
@@ -36,9 +36,6 @@ async function push(req: Request) {
         // convenient in development but you may want to reconsider as your app
         // gets close to production:
         // https://doc.replicache.dev/reference/server-push#error-handling
-        // await db.transaction(t =>
-        //   processMutation(t, data.clientGroupID, mutation, e as string),
-        // );
       }
 
       console.log('Processed mutation in', Date.now() - t1);
@@ -53,7 +50,6 @@ async function push(req: Request) {
 }
 
 async function processMutation(
-  t: Transaction,
   clientGroupID: string,
   mutation: MutationV1,
   userId: string,
@@ -61,7 +57,7 @@ async function processMutation(
   const { clientID } = mutation;
 
   // Get the previous version and calculate the next one.
-  const server = await t.query.replicacheServer.findFirst({
+  const server = await db.query.replicacheServer.findFirst({
     where: eq(replicacheServer.id, 1),
   })
   if (!server) {
@@ -73,7 +69,7 @@ async function processMutation(
   }
   const nextVersion = prevVersion + 1;
 
-  const lastMutationID = await getLastMutationID(t, clientID);
+  const lastMutationID = await getLastMutationID(clientID);
   const nextMutationID = lastMutationID + 1;
 
   console.log('nextVersion', nextVersion, 'nextMutationID', nextMutationID);
@@ -107,49 +103,46 @@ async function processMutation(
   // mutation.
   switch (mutation.name as Mutators) {
     case "saveVocabulary":
-      await createVocabulary(t, mutation.args as Vocabulary, userId, nextVersion);
+      await createVocabulary(mutation.args as Vocabulary, userId, nextVersion);
       break;
     case "deleteVocabulary":
-      await deleteVocabulary(t, mutation.args as string, nextVersion);
+      await deleteVocabulary(mutation.args as string, nextVersion);
       break;
     case "saveBasic":
-      await createBasic(t, mutation.args as Translation, userId, nextVersion);
+      await createBasic(mutation.args as Translation, userId, nextVersion);
       break;
     case "deleteBasic":
-      await deleteBasic(t, mutation.args as string, nextVersion);
+      await deleteBasic(mutation.args as string, nextVersion);
       break;
     case "saveCheck":
-      await createCheck(t, mutation.args as Translation, userId, nextVersion);
+      await createCheck(mutation.args as Translation, userId, nextVersion);
       break;
     case "deleteCheck":
-      await deleteCheck(t, mutation.args as string, nextVersion);
+      await deleteCheck(mutation.args as string, nextVersion);
       break;
     case "saveCompare":
-      await createCompare(t, mutation.args as Compare, userId, nextVersion);
+      await createCompare(mutation.args as Compare, userId, nextVersion);
       break;
     case "deleteCompare":
-      await deleteCompare(t, mutation.args as string, nextVersion);
+      await deleteCompare(mutation.args as string, nextVersion);
       break;
     case "savePattern":
-      await createPattern(t, mutation.args as Pattern, userId, nextVersion);
+      await createPattern(mutation.args as Pattern, userId, nextVersion);
       break;
     case "deletePattern":
-      await deletePattern(t, mutation.args as string, nextVersion);
+      await deletePattern(mutation.args as string, nextVersion);
       break;
     case "saveChat":
-      await createChat(t, mutation.args as Chat, userId, nextVersion);
+      await createChat(mutation.args as Chat, userId, nextVersion);
       break;
     case "deleteChat":
-      await deleteChat(t, mutation.args as string, nextVersion);
+      await deleteChat(mutation.args as string, nextVersion);
       break;
     default:
       throw new Error(`Unknown mutation: ${mutation.name}`);
   }
-
-  console.log('setting', clientID, 'last_mutation_id to', nextMutationID);
-  // Update lastMutationID for requesting client.
+  // Update lastMutationID for requesting cliendb.
   await setLastMutationID(
-    t,
     clientID,
     clientGroupID,
     nextMutationID,
@@ -157,13 +150,13 @@ async function processMutation(
   );
 
   // Update global version.
-  await t.update(replicacheServer).set({
+  await db.update(replicacheServer).set({
     version: nextVersion,
   }).where(eq(replicacheServer.id, 1));
 }
 
-async function getLastMutationID(t: Transaction, clientID: string) {
-  const clientRow = await t.query.replicacheClient.findFirst(
+async function getLastMutationID(clientID: string) {
+  const clientRow = await db.query.replicacheClient.findFirst(
     {
       where: eq(replicacheClient.id, clientID),
     }
@@ -175,20 +168,20 @@ async function getLastMutationID(t: Transaction, clientID: string) {
 }
 
 async function setLastMutationID(
-  t: Transaction,
+
   clientID: string,
   clientGroupID: string,
   mutationID: number,
   version: number,
 ) {
 
-  const result = await t.update(replicacheClient).set({
+  const result = await db.update(replicacheClient).set({
     clientGroupID,
     lastMutationID: mutationID,
     clientVersion: version,
   }).where(eq(replicacheClient.id, clientID));
   if (result.rowsAffected === 0) {
-    await t.insert(replicacheClient).values({
+    await db.insert(replicacheClient).values({
       id: clientID,
       clientGroupID,
       lastMutationID: mutationID,
@@ -198,12 +191,12 @@ async function setLastMutationID(
 }
 
 async function createVocabulary(
-  t: Transaction,
+
   value: Vocabulary,
   userId: string,
   version: number,
 ) {
-  await t.insert(vocabulary).values({
+  await db.insert(vocabulary).values({
     id: value.id,
     vocabulary: value.vocabulary,
     explanation: value.explanation,
@@ -212,23 +205,23 @@ async function createVocabulary(
   });
 }
 async function deleteVocabulary(
-  t: Transaction,
+
   value: string,
   version: number,
 ) {
-  await t.update(vocabulary).set({
+  await db.update(vocabulary).set({
     isDeleted: 1,
     version,
   }).where(eq(vocabulary.id, value));
 }
 
 async function createBasic(
-  t: Transaction,
+
   value: Translation,
   userId: string,
   version: number,
 ) {
-  await t.insert(basicTranslation).values({
+  await db.insert(basicTranslation).values({
     id: value.id,
     sentence: value.sentence,
     explanation: value.explanation,
@@ -237,23 +230,23 @@ async function createBasic(
   });
 }
 async function deleteBasic(
-  t: Transaction,
+
   value: string,
   version: number,
 ) {
-  await t.update(basicTranslation).set({
+  await db.update(basicTranslation).set({
     isDeleted: 1,
     version,
   }).where(eq(vocabulary.id, value));
 }
 
 async function createCheck(
-  t: Transaction,
+
   value: Translation,
   userId: string,
   version: number,
 ) {
-  await t.insert(checkTranslation).values({
+  await db.insert(checkTranslation).values({
     id: value.id,
     sentence: value.sentence,
     explanation: value.explanation,
@@ -262,23 +255,23 @@ async function createCheck(
   });
 }
 async function deleteCheck(
-  t: Transaction,
+
   value: string,
   version: number,
 ) {
-  await t.update(checkTranslation).set({
+  await db.update(checkTranslation).set({
     isDeleted: 1,
     version,
   }).where(eq(vocabulary.id, value));
 }
 
 async function createCompare(
-  t: Transaction,
+
   value: Compare,
   userId: string,
   version: number,
 ) {
-  await t.insert(compareTranslation).values({
+  await db.insert(compareTranslation).values({
     id: value.id,
     sentence: value.sentence,
     targetSentence: value.targetSentence,
@@ -288,23 +281,23 @@ async function createCompare(
   });
 }
 async function deleteCompare(
-  t: Transaction,
+
   value: string,
   version: number,
 ) {
-  await t.update(compareTranslation).set({
+  await db.update(compareTranslation).set({
     isDeleted: 1,
     version,
   }).where(eq(vocabulary.id, value));
 }
 
 async function createPattern(
-  t: Transaction,
+
   value: Pattern,
   userId: string,
   version: number,
 ) {
-  await t.insert(patternTranslation).values({
+  await db.insert(patternTranslation).values({
     id: value.id,
     sentence: value.sentence,
     pattern: value.pattern,
@@ -314,23 +307,23 @@ async function createPattern(
   });
 }
 async function deletePattern(
-  t: Transaction,
+
   value: string,
   version: number,
 ) {
-  await t.update(patternTranslation).set({
+  await db.update(patternTranslation).set({
     isDeleted: 1,
     version,
   }).where(eq(vocabulary.id, value));
 }
 
 async function createChat(
-  t: Transaction,
+
   value: Chat,
   userId: string,
   version: number,
 ) {
-  const exist = await t.query.chat.findFirst({
+  const exist = await db.query.chat.findFirst({
     where: eq(chat.id, value.id),
     with: {
       messages: true,
@@ -339,7 +332,7 @@ async function createChat(
   if (exist) {
     const existedMessages = exist.messages
     const newMessages = value.messages.filter(m => !existedMessages.find(em => em.id === m.id))
-    await t.insert(message).values(newMessages.map(m => ({
+    await db.insert(message).values(newMessages.map(m => ({
       id: m.id,
       chatId: value.id,
       content: m.content,
@@ -348,14 +341,14 @@ async function createChat(
 
     return;
   }
-  await t.insert(chat).values({
+  await db.insert(chat).values({
     id: value.id,
     title: value.title,
     description: value.description,
     userId,
     version,
   });
-  await t.insert(message).values(value.messages.map(m => ({
+  await db.insert(message).values(value.messages.map(m => ({
     id: m.id,
     chatId: value.id,
     content: m.content,
@@ -364,11 +357,11 @@ async function createChat(
 };
 
 async function deleteChat(
-  t: Transaction,
+
   value: string,
   version: number,
 ) {
-  await t.update(chat).set({
+  await db.update(chat).set({
     isDeleted: 1,
     version,
   }).where(eq(vocabulary.id, value));

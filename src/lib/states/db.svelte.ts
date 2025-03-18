@@ -34,7 +34,7 @@ export type Chat = WithID<{
 type WithID<T extends Record<string, unknown>> = T & { id: string }
 type ExcludeID<T> = Omit<T, "id">
 
-const prefixes = {
+export const prefixes = {
   vocabulary: "Vocabulary/",
   basic: "Basic/",
   check: "Check/",

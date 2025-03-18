@@ -1,8 +1,10 @@
-import { db, type Transaction } from "@/db/db";
+import { auth } from "@/auth";
+import { db } from "@/db/db";
 import { replicacheServer } from "@/db/schema";
+import { prefixes } from "@/states/db.svelte";
 import { json } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
-import type { PullRequestV1, PullResponse } from "replicache";
+import type { PatchOperation, PullRequestV1, PullResponse } from "replicache";
 import type { RequestHandler } from "./$types";
 
 export const POST = (async ({
@@ -19,77 +21,48 @@ async function pull(req: Request) {
   const fromVersion = (pull.cookie as number) ?? 0;
   const t0 = Date.now();
   try {
+    const userId = (await auth.api.getSession({
+      headers: req.headers
+    }))?.user.id
+    if (!userId) {
+      return
+    }
     // Read all data in a single transaction so it's consistent.
-    return await db.transaction(async t => {
-      // Get current version.
-      const server = await t.query.replicacheServer.findFirst({
-        where: eq(replicacheServer.id, 1),
-      });
-      if (!server) {
-        throw new Error(`No server found`);
-      }
-
-      const { version: currentVersion } = server
-
-      if (fromVersion > currentVersion) {
-        throw new Error(
-          `fromVersion ${fromVersion} is from the future - aborting. This can happen in development if the server restarts. In that case, clear appliation data in browser and refresh.`,
-        );
-      }
-
-      // Get lmids for requesting client groups.
-      const lastMutationIDChanges = await getLastMutationIDChanges(
-        t,
-        clientGroupID,
-        fromVersion,
-      );
-
-      // TODO get changed & build patches for each table
-
-      // // Get changed domain objects since requested version.
-      // const changed = await t.manyOrNone<{
-      //   id: string;
-      //   sender: string;
-      //   content: string;
-      //   ord: number;
-      //   version: number;
-      //   deleted: boolean;
-      // }>(
-      //   'select id, sender, content, ord, version, deleted from message where version > $1',
-      //   fromVersion,
-      // );
-
-      // // Build and return response.
-      // const patch: PatchOperation[] = [];
-      // for (const row of changed) {
-      //   const { id, sender, content, ord, version: rowVersion, deleted } = row;
-      //   if (deleted) {
-      //     if (rowVersion > fromVersion) {
-      //       patch.push({
-      //         op: 'del',
-      //         key: `message/${id}`,
-      //       });
-      //     }
-      //   } else {
-      //     patch.push({
-      //       op: 'put',
-      //       key: `message/${id}`,
-      //       value: {
-      //         from: sender,
-      //         content,
-      //         order: ord,
-      //       },
-      //     });
-      //   }
-      // }
-
-      const body: PullResponse = {
-        lastMutationIDChanges: lastMutationIDChanges ?? {},
-        cookie: currentVersion,
-        patch,
-      };
-      return body
+    // Get current version.
+    const server = await db.query.replicacheServer.findFirst({
+      where: eq(replicacheServer.id, 1),
     });
+    if (!server) {
+      throw new Error(`No server found`);
+    }
+
+    const { version: currentVersion } = server
+
+    if (fromVersion > currentVersion) {
+      throw new Error(
+        `fromVersion ${fromVersion} is from the future - aborting. This can happen in development if the server restarts. In that case, clear appliation data in browser and refresh.`,
+      );
+    }
+
+    // Get lmids for requesting client groups.
+    const lastMutationIDChanges = await getLastMutationIDChanges(
+      clientGroupID,
+      fromVersion,
+    );
+    const patches = (await Promise.all([
+      pullVocabularies(fromVersion, userId),
+      pullBasic(fromVersion, userId),
+      pullCheck(fromVersion, userId),
+      pullCompare(fromVersion, userId),
+      pullPattern(fromVersion, userId),
+      pullChat(fromVersion, userId),
+    ])).flatMap(x => x);
+    const body: PullResponse = {
+      lastMutationIDChanges: lastMutationIDChanges ?? {},
+      cookie: currentVersion,
+      patch: patches,
+    };
+    return body
   } catch (e) {
     console.error(e);
   } finally {
@@ -98,16 +71,180 @@ async function pull(req: Request) {
 }
 
 async function getLastMutationIDChanges(
-  t: Transaction,
   clientGroupID: string,
   fromVersion: number,
 ) {
-  const rows = await t.query.replicacheClient.findMany({
-    where: (client, { eq }) => {
-      return eq(client.clientGroupID, clientGroupID) && eq(client.clientVersion, fromVersion);
+  const rows = await db.query.replicacheClient.findMany({
+    where: (client, { eq, gt }) => {
+      return eq(client.clientGroupID, clientGroupID) && gt(client.clientVersion, fromVersion);
     },
   });
   return Object.fromEntries(rows.map(r => [r.id, r.lastMutationID]));
 }
 
+async function pullVocabularies(fromVersion: number, userId: string) {
+  const changed = await db.query.vocabulary.findMany({
+    where: (v, { gt, eq }) => gt(v.version, fromVersion) && eq(v.userId, userId),
+  });
+  const patch: PatchOperation[] = [];
+  for (const row of changed) {
+    const { id, vocabulary, explanation, version: rowVersion, isDeleted } = row;
+    if (isDeleted) {
+      if (rowVersion > fromVersion) {
+        patch.push({
+          op: 'del',
+          key: `${prefixes.vocabulary}${id}`,
+        });
+      }
+    } else {
+      patch.push({
+        op: 'put',
+        key: `${prefixes.vocabulary}${id}`,
+        value: {
+          id, vocabulary, explanation,
+        },
+      });
+    }
+  }
+  return patch
+}
 
+
+async function pullBasic(fromVersion: number, userId: string) {
+  const changed = await db.query.basicTranslation.findMany({
+    where: (v, { gt, eq }) => gt(v.version, fromVersion) && eq(v.userId, userId),
+  });
+  const patch: PatchOperation[] = [];
+  for (const row of changed) {
+    const { id, sentence, explanation, version: rowVersion, isDeleted } = row;
+    if (isDeleted) {
+      if (rowVersion > fromVersion) {
+        patch.push({
+          op: 'del',
+          key: `${prefixes.basic}${id}`,
+        });
+      }
+    } else {
+
+      patch.push({
+        op: 'put',
+        key: `${prefixes.basic}${id}`,
+        value: {
+          id, sentence, explanation,
+        },
+      });
+    }
+  }
+  return patch
+}
+
+async function pullCheck(fromVersion: number, userId: string) {
+  const changed = await db.query.checkTranslation.findMany({
+    where: (v, { gt, eq }) => gt(v.version, fromVersion) && eq(v.userId, userId),
+  });
+  const patch: PatchOperation[] = [];
+  for (const row of changed) {
+    const { id, sentence, explanation, version: rowVersion, isDeleted } = row;
+    if (isDeleted) {
+      if (rowVersion > fromVersion) {
+        patch.push({
+          op: 'del',
+          key: `${prefixes.check}${id}`,
+        });
+      }
+    } else {
+      patch.push({
+        op: 'put',
+        key: `${prefixes.check}${id}`,
+        value: {
+          id, sentence, explanation,
+        },
+      });
+    }
+  }
+  return patch
+}
+
+async function pullCompare(fromVersion: number, userId: string) {
+  const changed = await db.query.compareTranslation.findMany({
+    where: (v, { gt, eq }) => gt(v.version, fromVersion) && eq(v.userId, userId),
+  });
+  const patch: PatchOperation[] = [];
+  for (const row of changed) {
+    const { id, sentence, targetSentence, explanation, version: rowVersion, isDeleted } = row;
+    if (isDeleted) {
+      if (rowVersion > fromVersion) {
+        patch.push({
+          op: 'del',
+          key: `${prefixes.compare}${id}`,
+        });
+      }
+    } else {
+      patch.push({
+        op: 'put',
+        key: `${prefixes.compare}${id}`,
+        value: {
+          id, sentence, targetSentence, explanation,
+        },
+      });
+    }
+  }
+  return patch
+}
+
+async function pullPattern(fromVersion: number, userId: string) {
+  const changed = await db.query.patternTranslation.findMany({
+    where: (v, { gt, eq }) => gt(v.version, fromVersion) && eq(v.userId, userId),
+  });
+  const patch: PatchOperation[] = [];
+  for (const row of changed) {
+    const { id, sentence, pattern, explanation, version: rowVersion, isDeleted } = row;
+    if (isDeleted) {
+      if (rowVersion > fromVersion) {
+        patch.push({
+          op: 'del',
+          key: `${prefixes.pattern}${id}`,
+        });
+      }
+    } else {
+      patch.push({
+        op: 'put',
+        key: `${prefixes.pattern}${id}`,
+        value: {
+          id, sentence, pattern, explanation,
+        },
+      });
+    }
+  }
+  return patch
+}
+
+async function pullChat(fromVersion: number, userId: string) {
+  const changed = await db.query.chat.findMany({
+    where: (v, { gt, eq }) => gt(v.version, fromVersion) && eq(v.userId, userId),
+    with: {
+      messages: true,
+    }
+  });
+  const patch: PatchOperation[] = [];
+  for (const row of changed) {
+    const { id, title, description, messages, version: rowVersion, isDeleted } = row;
+    if (isDeleted) {
+      if (rowVersion > fromVersion) {
+        patch.push({
+          op: 'del',
+          key: `${prefixes.chat}${id}`,
+        });
+      }
+    } else {
+      patch.push({
+        op: 'put',
+        key: `${prefixes.chat}${id}`,
+        value: {
+          id, title, description, messages,
+        },
+      });
+    }
+  }
+  return patch
+}
