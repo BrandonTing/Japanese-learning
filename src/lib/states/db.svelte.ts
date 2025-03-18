@@ -176,6 +176,7 @@ class DB implements IDB {
       licenseKey: import.meta.env.VITE_REPLICACHE_KEY,
       mutators,
       pushURL: '/api/push',
+      pullURL: `/api/pull`,
     });
     import.meta.hot?.dispose(() => rep.close())
     this.rep = rep;

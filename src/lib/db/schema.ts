@@ -7,7 +7,7 @@ import {
 
 export const replicacheServer = sqliteTable('replicache_server', {
   id: int('id').primaryKey(),
-  version: integer('version'),
+  version: integer('version').notNull(),
 })
 
 export type ReplicacheServer = InferSelectModel<typeof replicacheServer>
