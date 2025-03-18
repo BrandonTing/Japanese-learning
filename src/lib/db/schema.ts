@@ -35,7 +35,7 @@ export const vocabulary = sqliteTable('vocabulary', {
 export type Vocabulary = InferSelectModel<typeof vocabulary>
 export type InsertVocabulary = InferInsertModel<typeof vocabulary>
 
-export const basicTranslation = sqliteTable('basic_vocabulary', {
+export const basicTranslation = sqliteTable('basic_translation', {
   id: text('id').primaryKey().notNull(),
   sentence: text('sentence').notNull(),
   explanation: text('explanation').notNull(),
@@ -47,7 +47,7 @@ export const basicTranslation = sqliteTable('basic_vocabulary', {
 export type BasicTranslation = InferSelectModel<typeof basicTranslation>
 export type InsertBasicTranslation = InferInsertModel<typeof basicTranslation>
 
-export const checkTranslation = sqliteTable('check_vocabulary', {
+export const checkTranslation = sqliteTable('check_translation', {
   id: text('id').primaryKey().notNull(),
   sentence: text('sentence').notNull(),
   explanation: text('explanation').notNull(),
@@ -59,7 +59,7 @@ export const checkTranslation = sqliteTable('check_vocabulary', {
 export type CheckTranslation = InferSelectModel<typeof checkTranslation>
 export type InsertCheckTranslation = InferInsertModel<typeof checkTranslation>
 
-export const compareTranslation = sqliteTable('compare_vocabulary', {
+export const compareTranslation = sqliteTable('compare_translation', {
   id: text('id').primaryKey().notNull(),
   targetSentence: text('target_sentence').notNull(),
   sentence: text('sentence').notNull(),
@@ -72,7 +72,7 @@ export const compareTranslation = sqliteTable('compare_vocabulary', {
 export type CompareTranslation = InferSelectModel<typeof compareTranslation>
 export type InsertCompareTranslation = InferInsertModel<typeof compareTranslation>
 
-export const patternTranslation = sqliteTable('pattern_vocabulary', {
+export const patternTranslation = sqliteTable('pattern_translation', {
   id: text('id').primaryKey().notNull(),
   pattern: text('pattern').notNull(),
   sentence: text('sentence').notNull(),
