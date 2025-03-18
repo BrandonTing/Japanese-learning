@@ -1,4 +1,6 @@
 import { db, type Transaction } from '@/db/db';
+import { replicacheClient, replicacheServer } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import type { MutationV1, PushRequestV1 } from 'replicache';
 import type { RequestHandler } from './$types';
 
@@ -26,9 +28,9 @@ async function push(req: Request) {
         // convenient in development but you may want to reconsider as your app
         // gets close to production:
         // https://doc.replicache.dev/reference/server-push#error-handling
-        await db.transaction(t =>
-          processMutation(t, data.clientGroupID, mutation, e as string),
-        );
+        // await db.transaction(t =>
+        //   processMutation(t, data.clientGroupID, mutation, e as string),
+        // );
       }
 
       console.log('Processed mutation in', Date.now() - t1);
@@ -51,10 +53,16 @@ async function processMutation(
   const { clientID } = mutation;
 
   // Get the previous version and calculate the next one.
-  const { version: prevVersion } = await t.one(
-    'select version from replicache_server where id = $1 for update',
-    serverID,
-  );
+  const server = await t.query.replicacheServer.findFirst({
+    where: eq(replicacheServer.id, 1),
+  })
+  if (!server) {
+    throw new Error('No server row found');
+  }
+  const prevVersion = server.version;
+  if (!prevVersion) {
+    throw new Error('No version found');
+  }
   const nextVersion = prevVersion + 1;
 
   const lastMutationID = await getLastMutationID(t, clientID);
@@ -95,11 +103,11 @@ async function processMutation(
   } else {
     // TODO: You can store state here in the database to return to clients to
     // provide additional info about errors.
-    console.log(
-      'Handling error from mutation',
-      JSON.stringify(mutation),
-      error,
-    );
+    // console.log(
+    //   'Handling error from mutation',
+    //   JSON.stringify(mutation),
+    //   error,
+    // );
   }
 
   console.log('setting', clientID, 'last_mutation_id to', nextMutationID);
@@ -113,21 +121,21 @@ async function processMutation(
   );
 
   // Update global version.
-  await t.none('update replicache_server set version = $1 where id = $2', [
-    nextVersion,
-    serverID,
-  ]);
+  await t.update(replicacheServer).set({
+    version: nextVersion,
+  }).where(eq(replicacheServer.id, 1));
 }
 
-export async function getLastMutationID(t: Transaction, clientID: string) {
-  const clientRow = await t.oneOrNone(
-    'select last_mutation_id from replicache_client where id = $1',
-    clientID,
-  );
+async function getLastMutationID(t: Transaction, clientID: string) {
+  const clientRow = await t.query.replicacheClient.findFirst(
+    {
+      where: eq(replicacheClient.id, clientID),
+    }
+  )
   if (!clientRow) {
     return 0;
   }
-  return parseInt(clientRow.last_mutation_id);
+  return clientRow.lastMutationID;
 }
 
 async function setLastMutationID(
@@ -137,24 +145,19 @@ async function setLastMutationID(
   mutationID: number,
   version: number,
 ) {
-  const result = await t.result(
-    `update replicache_client set
-      client_group_id = $2,
-      last_mutation_id = $3,
-      version = $4
-    where id = $1`,
-    [clientID, clientGroupID, mutationID, version],
-  );
-  if (result.rowCount === 0) {
-    await t.none(
-      `insert into replicache_client (
-        id,
-        client_group_id,
-        last_mutation_id,
-        version
-      ) values ($1, $2, $3, $4)`,
-      [clientID, clientGroupID, mutationID, version],
-    );
+
+  const result = await t.update(replicacheClient).set({
+    clientGroupID,
+    lastMutationID: mutationID,
+    clientVersion: version,
+  }).where(eq(replicacheClient.id, clientID));
+  if (result.rows.length === 0) {
+    await t.insert(replicacheClient).values({
+      id: clientID,
+      clientGroupID,
+      lastMutationID: mutationID,
+      clientVersion: version,
+    });
   }
 }
 
