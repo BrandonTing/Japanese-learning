@@ -6,8 +6,7 @@ A comprehensive web application designed to help users learn Japanese and prepar
 
 Check out the demo video below to see the platform in action:
 
-![Demo Video]([./demo.mp4](https://github.com/user-attachments/assets/c36d4527-8731-4dfe-b60c-537800b7b24f
-))
+![Demo Video](https://github.com/user-attachments/assets/c36d4527-8731-4dfe-b60c-537800b7b24f)
 
 ## Features
 
