@@ -17,8 +17,8 @@
 	let isLoading = $derived($status === 'streaming' || $status === 'submitted');
 	let canSubmit = $derived(Boolean(pattern.trim() && text.trim()));
 	let prompt = $derived(`
-    我會提供一個日文句子以及其中有出現的單詞，請協助翻譯這段話，並解釋該單詞或文法的意思：
-    單詞：${pattern.trim()}
+    我會提供一個日文句子以及其中有出現的一段文字，請協助翻譯這段話，並解釋該段文字的意思：
+    文字：${pattern.trim()}
     ${text.trim()}
   `);
 	let canBookmark = $derived(
