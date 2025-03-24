@@ -1,38 +1,37 @@
-# sv
+# Japanese Learning Platform
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A comprehensive web application designed to help users learn Japanese and prepare for the Japanese Language Proficiency Test (JLPT). This platform offers interactive exam generation, AI-powered learning assistance, translation services, and progress tracking.
 
-## Creating a project
+## 🎥 Demo Video
 
-If you're seeing this, you've probably already done this step. Congrats!
+Check out the demo video below to see the platform in action:
 
-```bash
-# create a new project in the current directory
-npx sv create
+![Demo Video](https://github.com/user-attachments/assets/c36d4527-8731-4dfe-b60c-537800b7b24f)
 
-# create a new project in my-app
-npx sv create my-app
-```
+## Features
 
-## Developing
+### 🎓 JLPT Exam Preparation
+- Generate practice exams for all JLPT levels (N5-N1)
+- Take timed exams with multiple-choice questions
+- Review exam results and track your progress
+- Save exam history for future reference
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### 🤖 AI Learning Assistant
+- Chat with an AI assistant for Japanese learning help
+- Get explanations for grammar patterns and vocabulary
+- Save and continue conversations
+- Organize conversations with titles and descriptions
 
-```bash
-npm run dev
+### 📚 Learning Resources
+- Learn new vocabulary with detailed explanations and examples
+- Study grammar patterns with usage guides and example sentences
+- Save learned items to your personal library
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+### 🔤 Translation Tool
+- Translate Japanese text with detailed explanations
+- Identify grammar points in the translated text
+- Learn from real-world Japanese content
 
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### 📱 Mobile Responsive
+- Access all features on any device
+- Optimized interface for both desktop and mobile
