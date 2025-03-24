@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Tabs from '$lib/components/ui/tabs';
+	import Analyze from './analyze.svelte';
 	import Basic from './basic.svelte';
 	import Check from './check.svelte';
 	import Compare from './compare.svelte';
@@ -24,4 +25,5 @@
 	<Tabs.Content value="Check"><Check /></Tabs.Content>
 	<Tabs.Content value="Compare"><Compare /></Tabs.Content>
 	<Tabs.Content value="Pattern"><Pattern /></Tabs.Content>
+	<Tabs.Content value="Analyze"><Analyze /></Tabs.Content>
 </Tabs.Root>

@@ -1,4 +1,4 @@
-export const tabs = ['Basic', 'Check', 'Compare', 'Pattern'] as const
+export const tabs = ['Basic', 'Check', 'Compare', 'Pattern', 'Analyze'] as const
 
 type Tab = typeof tabs[number] | string & {}
 

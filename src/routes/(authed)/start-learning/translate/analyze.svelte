@@ -2,42 +2,31 @@
 	import ClearInput from '@/components/clearInput.svelte';
 	import ContentBlock from '@/components/contentBlock.svelte';
 	import { Button } from '@/components/ui/button';
-	import { Input } from '@/components/ui/input';
 	import { Textarea } from '@/components/ui/textarea';
-	import { db } from '@/states/db.svelte';
 	import { useChat } from '@ai-sdk/svelte';
 	import * as Sentry from '@sentry/sveltekit';
-	import { Bookmark } from 'lucide-svelte';
-	import { toast } from 'svelte-sonner';
-	let pattern = $state('');
 	let text = $state('');
 	const { messages, append, status, stop, setMessages, error } = useChat({
 		api: '/api/ai/translation'
 	});
 	let isLoading = $derived($status === 'streaming' || $status === 'submitted');
-	let canSubmit = $derived(Boolean(pattern.trim() && text.trim()));
+	let canSubmit = $derived(Boolean(text.trim()));
 	let prompt = $derived(`
-    我會提供一個日文句子以及其中有出現的一段文字，請協助翻譯這段話，並解釋該段文字的意思：
-    文字：${pattern.trim()}
+    翻譯這段話，並分析這句話的語法結構，先從整體架構開始說明由哪些子句組成，再對每個子句做解析，對於子句的解析以表格呈現：
     ${text.trim()}
   `);
-	let canBookmark = $derived(
-		prompt === $messages.findLast((message) => message.role === 'user')?.content && !isLoading
-	);
 </script>
 
 <div class="flex gap-4 flex-col px-1">
 	<p class="text-sm text-muted-foreground">
 		Paste a Japanese article for translation and grammar explanation.
 	</p>
-
 	<div class="relative">
 		<Textarea placeholder="Paste your Japanese text here..." bind:value={text} rows={5} />
 		{#if text}
 			<ClearInput clear={() => (text = '')} className="top-full -translate-y-6" />
 		{/if}
 	</div>
-	<Input type="text" placeholder="Pattern" bind:value={pattern} />
 
 	<div class="flex justify-end gap-2">
 		<Button
@@ -51,13 +40,9 @@
 		{:else}
 			<Button
 				onclick={() => {
-					if (!text.includes(pattern)) {
-						toast.warning('The pattern is not found in the sentence.');
-						return;
-					}
 					Sentry.startSpan(
 						{
-							name: 'Translate and Explain Grammer',
+							name: 'Translate and Analyze',
 							op: 'Translate'
 						},
 						() => {
@@ -72,18 +57,6 @@
 				disabled={!canSubmit}>Submit</Button
 			>
 		{/if}
-		<Button
-			variant="outline"
-			size="icon"
-			disabled={!canBookmark}
-			on:click={() => {
-				const content = $messages.findLast((message) => message.role === 'assistant')?.content;
-				if (!content) return;
-				db.savePattern({ pattern, sentence: text, explanation: content });
-			}}
-		>
-			<Bookmark class="h-4 w-4" />
-		</Button>
 	</div>
 	<ContentBlock messages={$messages} {isLoading} error={$error}></ContentBlock>
 </div>
