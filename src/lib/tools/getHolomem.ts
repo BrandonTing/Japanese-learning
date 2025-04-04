@@ -114,5 +114,8 @@ const hololiveMembers = [
 export const getHoloMemTool = tool({
   description: "取得Hololive成員的名字清單",
   parameters: z.object({}),
-  execute: async () => hololiveMembers
+  execute: async () => {
+    const shuffled = hololiveMembers.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 5);
+  }
 })
