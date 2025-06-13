@@ -12,7 +12,7 @@ export const POST = (async ({ request }) => {
   const { messages } = await request.json();
 
   const result = streamText({
-    model: openai('gpt-4o'),
+    model: openai('gpt-4.1'),
     temperature: 1,
     system: `
       你是一個日文教師，用戶是正在準備JLPT考試的學生，

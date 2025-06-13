@@ -37,10 +37,12 @@ class LoginState {
             )
           );
         },
-        catch: () =>
-          new AuthError({
+        catch: (e) => {
+          console.log(e)
+          return new AuthError({
             failedReason: 'Failed to signUp'
           })
+        }
       });
       if (error) {
         yield* new AuthError({

@@ -29,7 +29,7 @@ export const POST = (async ({ request }) => {
   }
 
   const result = streamText({
-    model: openai('gpt-4o'),
+    model: openai('gpt-4.1'),
     temperature: 0.1,
     system: `
       你是一個日文教師，會利用台灣繁體中文解釋日文
